@@ -1,0 +1,632 @@
+@namespace(uri="TestingMM", prefix="TestingMM")
+package TestingPackage;
+
+class TestingSpace {
+	attr String name;
+	val Metrics.Metric[*] metrics;
+	val FuzzingOperations.FuzzingOperation[*] possibleFuzzingOperations;
+	val TestCampaign[*] campaigns;
+	val MRSPackage.MRS[1] mrs;
+}
+
+class TestCampaign {
+	attr String name;
+	ref Metrics.Metric[*] metrics;
+	ref Metrics.Metric[*] conditionMetrics;
+	val ActivationGenerationMethod activationGeneration;
+	ref FuzzingOperations.FuzzingOperation[*] includedOperations;
+	val TestGenerationApproach[1] approach;
+	val Test[*]#parentCampaign performedTests;
+	val CampaignResultSet[*] resultSets; 
+	val ExecutionEndTrigger[1] endTrigger;
+}
+
+class Test {
+	attr String name;
+	val FuzzingOperations.FuzzingOperation[*]#containingTest operations;
+	val Metrics.MetricInstance[*] metrics;
+	ref Test[*] developedFrom;
+	readonly transient ref TestCampaign[1]#performedTests parentCampaign;
+	val TestDebuggingFlags[*] debugFlags;
+}
+
+abstract class TestDebuggingFlags {
+
+}
+
+class PassiveMonitorOnly extends TestDebuggingFlags {
+}
+
+abstract class ActivationGenerationMethod {
+}
+
+class TimeBasedActivationGenerationMethod extends ActivationGenerationMethod {
+}
+
+class ConditionBasedActivationGenerationMethod extends ActivationGenerationMethod {
+	attr int conditionDepth;
+}
+
+enum ResultSetStatus {
+	FINAL = 1;
+	INTERMEDIATE = 2;
+}
+
+class CampaignResultSet {
+	attr String name;
+	attr ResultSetStatus status;
+	ref Test[*] results;
+}
+
+abstract class ExecutionEndTrigger {
+}
+
+class TimeBasedEnd extends ExecutionEndTrigger {
+	attr long timeLimitSeconds;
+}
+
+abstract class TestGenerationApproach {
+}
+
+class RandomTestGeneration extends TestGenerationApproach {
+}
+
+abstract class EvolutionaryAlgorithm extends TestGenerationApproach {
+}
+
+class NSGAEvolutionaryAlgorithm extends EvolutionaryAlgorithm {
+	attr int populationSize;
+	attr int iterations;
+}
+
+class NSGAWithCoverageCells extends NSGAEvolutionaryAlgorithm {
+	attr int coveragePerCell;
+	attr double targetCoverageProportion;
+	val DimensionInterval[+] dimensionRecords;
+	val CoverageBoostingStrategy coverageBoostingStrategy;
+}
+
+abstract class CoverageBoostingStrategy {
+	op boolean elementShouldUseCoverageBoosting(int i, int genNum, int boostingCountThisGeneration);
+}
+
+class FixedNSGACoverageBoostingStrategy extends CoverageBoostingStrategy {
+	attr int useBoostingOnceEveryGenerations = 2;
+	attr int useBoostingOnceEveryIterations = 2;
+}
+
+class LinearNSGACoverageBoostingStrategy extends CoverageBoostingStrategy {
+	attr int useBoostingOnceEveryGenerations = 2;
+	attr int startingBoostingCount;
+	attr int endingBoostingCount;
+	attr int countDropEveryGeneration;
+}
+
+class DimensionInterval {
+	attr DimensionID dimID;
+	attr double minValue;
+	attr double maxValue;
+	attr int count;
+	attr int extraData = -1;
+}
+
+enum DimensionID {
+	T1_TIME_MIDPOINT_MEAN = 1;
+	T2_TIME_LENGTH_MEAN = 2;
+	T3_TIME_MIDPOINT_VAR = 3;
+	P1_PARAMETER_MEAN = 4;
+	P2_PARAMETER_VARIANCE = 5;
+	O1_FUZZRANGE_COUNT = 6;
+	O2_DELAY_COUNT = 7;
+	O3_DELETION_COUNT = 8;
+	O0_TOTAL_COUNT = 9;
+}
+
+class RepeatedExecution extends TestGenerationApproach {
+	ref Test[1] testToRepeat;
+	attr int repeatCount;
+}
+
+@namespace(uri="FuzzingOperations", prefix="")
+package FuzzingOperations {
+	abstract class FuzzingOperation {
+		attr String name;
+		attr int priority;
+
+		// This is being pushed into the subclasses
+		//ref MRSPackage.GenericVariable variableToAffect;
+		
+		val Activation[1] activation;
+		
+		// TODO: check if all these are still relevant
+		attr boolean messagesFromAllComponenents = true;
+		ref MRSPackage.Node[*] fromNodes;
+		attr boolean messagesToAllComponenents = true;
+		ref MRSPackage.Node[*] toNodes;
+		ref MRSPackage.Node nodeToFuzz;
+		
+		attr boolean allPublishingVars = false;
+		attr boolean allSubscribingVars = false;
+		ref FuzzingOperation fromTemplate;
+		readonly transient ref Test#operations containingTest;
+		val FixedTimeActivation recordedTimings;
+		attr long seed;
+		attr int sequenceNumInTest;
+		attr double inclusionProbability = "1";
+		attr boolean includeInTiming = true;
+		val StandardGrammar.ConditionConstraint[*] conditionConstraints;
+		
+		op FuzzingOperation dup();
+		op FuzzingOperation findReduction();
+	}
+
+	abstract class Activation {
+
+	}
+
+	class ConstantActivation extends Activation {
+		
+	}
+	
+	abstract class DynamicActivation extends Activation {
+		
+	}
+
+	class FixedTimeActivation extends DynamicActivation {
+		attr double startTime;
+		attr double endTime;
+	}
+
+	class ConditionBasedActivation extends DynamicActivation {
+		val StandardGrammar.Condition starting;
+		val StandardGrammar.Condition ending;
+		attr int maximumActivations = 1;
+	}
+
+	class ConditionBasedTimeLimited extends DynamicActivation {
+		val StandardGrammar.Condition starting;
+		attr double length;
+		attr int maximumActivations = 1;
+	}
+
+//	class FuzzTestingOperation extends FuzzingOperation {
+//		
+	//}
+
+	abstract class VariableOperation extends FuzzingOperation {
+		ref MRSPackage.GenericVariable variableToAffect;
+	}
+	
+	// CustomFuzzingOperation is still defined on a particular variable, hence 
+	// it is a subclass of VariableOperation
+	class CustomFuzzingOperation extends VariableOperation {
+		val ValueSet[*] params;
+		attr String customProcessClass;
+	}
+
+	abstract class RandomValueFuzzingOperation extends VariableOperation {
+		
+	}
+	
+	class RandomValueFromSetOperation extends RandomValueFuzzingOperation {
+		val ValueSet[*] valueSet;
+		attr boolean isRelative = false;
+		
+	}
+
+	class ValueSet {
+		attr String propertyName;
+	}
+
+	enum RandomValueFromSetChoice {
+		RANDOM_FROM_SEED = 0;
+		ALWAYS_LOW = 1;
+		ALWAYS_HIGH = 2;
+		KEEP_SAME_RANGE = 3;
+	}
+
+	abstract class ValueRange extends ValueSet {
+		attr RandomValueFromSetChoice randChoice;
+	}
+
+	class IntRange extends ValueRange {
+		attr int lowerBound;
+		attr int upperBound;
+	}
+
+	class DoubleRange extends ValueRange {
+		attr double lowerBound;
+		attr double upperBound;
+		op DoubleRange findReduction();
+	}
+
+	class Point {
+		attr double x;
+		attr double y;
+		attr double z;
+	}
+
+	class PointRange extends ValueRange {
+		val Point[1] minPoint;
+		val Point[1] maxPoint;
+	}
+
+	class StringSet extends ValueSet {
+		attr String[*] choices;
+	}
+
+	class ExternalResourceSet extends ValueSet {
+		attr String location;
+	}
+
+	abstract class NetworkFuzzingOperation extends FuzzingOperation {
+		ref MRSPackage.EventBasedVariable variableToAffect;
+		
+	}
+
+	abstract class BlackholeNetworkOperation extends NetworkFuzzingOperation {
+	
+	}
+
+	class LatencyNetworkOperation extends NetworkFuzzingOperation {
+		val DoubleRange[1] latency;
+		attr boolean randomised = false;
+	}
+
+	class PacketLossNetworkOperation extends NetworkFuzzingOperation {
+		val DoubleRange[1] frequency;
+	}
+	
+	// TODO: implement multiple messages
+	class MultipleMessagesNetworkOperation extends NetworkFuzzingOperation {
+		val IntRange[1] howManyClones;
+	}
+}
+
+@namespace(uri="Metrics", prefix="")
+package Metrics {
+	abstract class SimStream {
+	}
+
+	class InputStream extends SimStream {
+	}
+
+	class OutputStream extends SimStream {
+	}
+
+	enum MetricOptimisationDirection {
+		HIGHEST = 1;
+		LOWEST = 2;
+	}
+
+	abstract class Metric {
+		attr String name;
+		attr MetricOptimisationDirection dir;
+		ref MRSPackage.EventBasedVariable[*] relatedVariables;
+		val MetricDefault valueIfNotReceived;
+		val MetricDefault[1] initValue;
+		attr boolean useInOptimisation;
+	}
+
+	class MetricDefault {
+		attr double defaultVal;
+	}
+
+	class VariableMetric extends Metric {
+		ref MRSPackage.EventBasedVariable[1] chosenVariable;
+	}
+
+	class MetricInstance {
+		ref Metric[1] metric;
+		val Results.Result[1] result;
+	}
+
+	abstract class PropertyMetric extends Metric {
+		ref MRSPackage.ComponentProperty[1] property;
+	}
+
+	class StreamMetric extends Metric {
+		val SimStream[*] streams;
+		val StreamResult res;
+	}
+
+	abstract class SpecialMetric extends StreamMetric {
+	}
+
+	abstract class DirectMessageGenerationMetric extends StreamMetric {
+	}
+
+	class StartEndTimingMetric extends DirectMessageGenerationMetric {
+	}
+
+	class FuzzingOperationTimesMetric extends SpecialMetric {
+	}
+
+	abstract class StreamResult {
+	}
+
+	class FileStreamResult extends StreamResult {
+		attr String filename;
+	}
+}
+
+@namespace(uri="Results", prefix="")
+package Results {
+	class Result {
+		attr String name;
+		attr double value;
+	}
+}
+
+@namespace(uri="StandardGrammar", prefix="")
+package StandardGrammar {
+	abstract class ConditionElement {
+	}
+
+	class CompositeCondition extends ConditionElement {
+		val ConditionElement[1] left;
+		val ConditionElement[1] right;
+		attr BinaryLogicalOperation[1] binop;
+	}
+
+	class BasicCondition extends ConditionElement {
+		val ConditionVariable[1] left;
+		attr BinaryComparisonOperation[1] bincomp;
+		val ConditionExpr[1] right;
+	}
+
+	abstract class ConditionExpr {
+	
+	}
+
+	class ConditionInteger extends ConditionExpr {
+		attr int value;
+	}
+
+	class ConditionVariable extends ConditionExpr {
+		ref Metrics.Metric[1] metric;
+	}
+
+	enum BinaryComparisonOperation {
+		LESS_THAN = 1;
+		GREATER_THAN = 2;
+		EQUALS = 3;
+	}
+
+	enum BinaryLogicalOperation {
+		AND = 1;
+		OR = 2;
+	}
+
+	class Condition {
+		attr String name;
+		val ConditionElement[1] c;
+	}
+
+	abstract class ConditionConstraint {
+		
+	}
+	
+	class ContainsVariable extends ConditionConstraint {
+		ref Metrics.Metric[1] metric;
+	}
+	
+	class ContainsInteger extends ConditionConstraint {
+		attr int minValue;
+		attr int maxValue;
+	}	
+}
+
+@namespace(uri="MRSPackage", prefix="")
+package MRSPackage {
+	class MRS {
+		val GenericVariable[*] variables;
+		attr int launchDelaySeconds = 40;
+		// TODO: this should be replaced with a reference to the started containers
+		attr String launchFileLocation;
+		attr String customTerminateFileLocation;
+		attr String recordFileLocation;
+		
+		val Node[*] nodes;
+		val Simulator[1] simulator;
+		val Type[*] propertyType;
+		val Execution.ExecutionStrategy[1] execStrategy;
+	}
+
+	/** This is a Node in the MRS simulation */
+	class Node {
+		attr String name;
+		ref GenericVariable[*] subscriber;
+		ref GenericVariable[*] publisher;
+		ref ComponentProperty[*] properties;
+	}
+	
+//	class PublicationInformation {
+//		// For remapping - need the node info
+//	}
+	
+	abstract class GenericVariable {
+		attr String name;
+		ref Type[1] type;
+	}
+	
+	/** A static variable defined in the MRS configuration files.
+	Note that variables may be defined at multiple locations e.g. initialisation points */
+	class StaticVariable extends GenericVariable {
+		val ConfigLocation[1..*] locations;
+	}
+
+	abstract class DynamicVariable extends GenericVariable {
+
+	}
+
+	/** A dynamic variable represented by a ROS topic (or gRPC SHM interface) 
+	Variables are represented as a single event	*/
+	class EventBasedVariable extends DynamicVariable {
+		//val ConfigLocation[0..1] remappingLocation; // The location of the topic for remapping - is this enough
+	}
+	
+	class ParameterVariable extends DynamicVariable {
+		// Where to store the component
+		attr String componentName;
+	}
+	
+	// ValueModification fuzzing operations can refer to the generic variable
+	// activation conditions (time or condition) obviously ignored for the static variable
+	// What if multiple operations refer to the static variable - processed in order
+	
+	// Others (delay, deletion, duplication) can only refer to the Variable (not parameter variable)
+	// since these are event based
+	
+	abstract class ConfigLocation {
+		ref Execution.Dependency[1] root;
+	}
+	
+	abstract class FileLocation extends ConfigLocation {
+		attr String fileName;
+	}
+	
+	class PropertiesKeyValues extends FileLocation {
+		attr String key;
+	}
+	
+	class FixedPosition extends FileLocation {
+		attr int lineNum;
+		attr int columnNum;
+	}
+	
+	class RegexLocation extends FileLocation {
+		attr String regexFinder;
+	}
+	
+	class XMLConfigLocation extends FileLocation {
+		attr String xpathExpression;
+		attr String seperationCharacterAsString = " ";
+		attr int elementNum = -1;
+	}
+
+	class Type {
+		attr String name;
+		attr ParsingMethod[1] parsingMethod;
+		val Parameter[*] parameters;
+	}
+
+	enum ParsingMethod {
+		JSON = 0;
+		CSV = 1;
+		CUSTOM = 2;
+		STRING = 3;
+	}
+
+	class Parameter {
+		attr String name;
+		val Parameter[*] subparameters;
+		ref Type[1] type;
+	}
+
+	class ComponentProperty {
+		attr String name;
+		ref Type[1] type;
+	}
+
+	abstract class Simulator {
+		val SimVariableConfiguration[*] varConfigs;
+		ref Execution.Dependency simulationDependency;
+	}
+
+	class ROSSimulator extends Simulator {
+		attr String hostname;
+		attr String port;
+		
+	}
+	
+	abstract class SimVariableConfiguration {
+		ref DynamicVariable[1] var;
+	} 
+	
+	class ROSVariableConfiguration extends SimVariableConfiguration {
+		val XMLConfigLocation[1] launchFileloc;
+	} 
+
+	class MOOSSimulator extends Simulator {
+		attr String hostname;
+		attr String port;
+	}
+
+	class TTSSimulator extends Simulator {
+		attr String hostname;
+		attr String port;
+		attr double stepSizeMillis = "20";
+		attr boolean useStepping = false;
+		attr boolean useGUI = false;
+	}
+}
+
+@namespace(uri="Execution", prefix="")
+package Execution {
+	abstract class ExecutionStrategy {
+		op boolean isDistributed();
+	}
+	
+	/** Represents execution on the local machine */
+	class LocalExecutionStrategy extends ExecutionStrategy {
+		attr String launchFileLocation;
+	}
+	
+	/** Represents execution via remote workers */
+	class DistributedExecutionStrategy extends ExecutionStrategy {
+		attr boolean automaticWorkerDetection = true;
+		attr String exptRunnerIP;
+		val Dependency[0..*] dependencies;
+		val ExecutionTarget[0..*] extraExecutionTargets;
+		val AllocationStrategy[1] allocationStrategy;
+	}
+	
+	abstract class AllocationStrategy {
+	
+	}
+	
+	class DynamicTaskAllocation extends AllocationStrategy {
+		
+	}
+	
+	class RoundRobinPreAllocation extends AllocationStrategy {
+		
+	}
+	
+	abstract class ExecutionTarget { }
+	
+	enum WorkerOS {
+		LINUX = 0;
+		WINDOWS = 1;
+	}
+	
+	class SOPRANOWorkerNode extends ExecutionTarget {
+		attr String ipAddress;
+		attr WorkerOS[1] workerOS;
+	}
+	
+	abstract class Dependency { }
+	
+	enum ContainerTechnology {
+		DOCKER = 0;
+		PODMAN = 1;
+	}
+	
+	class FileTreeDependency extends Dependency {
+		
+	}
+	
+	class ContainerDependency extends Dependency {
+		attr String imageName;
+		attr ContainerTechnology[1] tech;
+	}
+	
+	class DerivedContainerDependency extends Dependency {
+		val ContainerDependency[1] base;
+	}
+	
+	class ArchiveDependency  extends Dependency {
+		attr String location;
+	}
+}

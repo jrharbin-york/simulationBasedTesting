@@ -1,0 +1,20 @@
+context FuzzingOperation {
+	constraint ValidActivations {
+		guard : self.isKindOf("VariableOperation")
+	    check : self.activation.satisfies("staticVarsNoActivation")
+  	}
+}
+
+context Activation {
+	constraint staticVarsNoActivation {
+		check : not (hasStaticVar(self) and hasDynamicActivation(self))
+	}
+}
+
+operation Activation hasStaticVar() : Boolean {
+	return self.variableToAffect.isKindOf(StaticVariable);
+}
+
+operation Activation hasDynamicActivation() : Boolean {
+	return self.activation.isKindOf(DynamicActivation);
+}

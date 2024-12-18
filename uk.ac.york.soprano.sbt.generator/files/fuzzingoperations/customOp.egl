@@ -1,0 +1,62 @@
+[% var commonTemplate : Template = TemplateFactory.load("fuzzingoperations/fuzzOpCommon.egl");
+
+var extraImports = new List();
+extraImports.add("fuzzingoperations.custom.*");
+extraImports.add("uk.ac.york.soprano.sbt.architecture.data.DataRange");
+
+commonTemplate.populate("fuzzOp", fuzzOp);
+commonTemplate.populate("classNameMiddle", "Delay");
+commonTemplate.populate("extraImports", extraImports);
+commonTemplate.populate("useRandomSeed", false);
+commonTemplate.populate("extraConstructorMethodCall", "setupFuzzOpInternal");
+
+var customProcessName = fuzzOp.customProcessClass;
+%]
+
+[%= commonTemplate.process() %]
+
+	CustomFuzzingOperation fuzzOpInternal;
+
+	public void processElement1(EventMessage value, Context ctx, Collector<EventMessage> out) throws Exception {
+		if (isReadyNow()) {
+			Map<String,Object> params = getParameters();
+			[% 	if (fuzzOp.variableToAffect.isDefined()) { 
+				var targetTopic = fuzzOp.variableToAffect.name;	%]
+				String topic = value.getTopic();
+				if (topic.contains("[%= targetTopic %]")) {
+					fuzzOpInternal.customProcess(params, value, ctx, out);
+				} else {
+					out.collect(value);
+				}
+			[% } else { %] 
+				fuzzOpInternal.customProcess(params, value, ctx, out);
+			[% } %] 
+		} else {
+			out.collect(value);
+		}
+	}
+	
+	private Map<String,Object> getParameters() {
+		Map<String,Object> params = new HashMap<String,Object>();
+		[% for (v in fuzzOp.params) { 
+				var pName = v.propertyName;
+				// TODO: support other data types here in the fuzzing operation definition
+				if (v.isKindOf(DoubleRange)) { %]
+					params.put("[%= pName %]", new DataRange([%= v.lowerBound %], [%= v.upperBound %]));
+				[% }
+				if (v.isKindOf(IntRange)) { %]
+					params.put("[%= pName %]", new DataRange([%= v.lowerBound %], [%= v.upperBound %]));				
+				[% }
+		} %]
+
+		return params;
+	}
+	
+	private void setupFuzzOpInternal() {
+		this.fuzzOpInternal = new [%= customProcessName %]();
+	}
+	
+	public void preprocessing() {
+		fuzzOpInternal.customPreprocessing(getParameters());
+	}
+}

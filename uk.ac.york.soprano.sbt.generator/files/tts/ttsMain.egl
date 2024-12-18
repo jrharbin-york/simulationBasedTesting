@@ -1,0 +1,479 @@
+[%
+	var mrs = Testing!TestingSpace.all().first().mrs;
+	var launchFileLocation = mrs.launchFileLocation;
+	var simulator = mrs.simulator;
+	var topicsNodesPublish = Node.all().publisher.flatten();
+	var topicsMetricsNeed = Metric.all().relatedVariables.flatten();
+	var allTopics = topicsNodesPublish.includingAll(topicsMetricsNeed).asSet();
+	
+	var fuzzingVars = new Set();
+	topicsNodesPublish.println();
+	topicsMetricsNeed.println();
+	var testNameString = test.name.firstToUpperCase();
+	var sanitiseVariables = false;
+	var recordDelay = true;	
+	
+	var sendBackToSimulator = true;
+	
+	var useStepping = simulator.useStepping;
+	var useGUI = simulator.useGUI;
+	
+	// This will activate sending back all topics in the MITM. Normally only the
+	// fuzzing variables should be sent back
+	var sendBackAllTopics = true;
+%]
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.time.Instant;
+
+import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.serialization.SimpleStringEncoder;
+import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.connector.file.sink.FileSink;
+
+import org.apache.flink.configuration.Configuration;
+
+import org.apache.flink.core.fs.Path;
+import org.apache.flink.streaming.api.datastream.*;
+import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
+import org.apache.flink.util.Collector;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+
+import uk.ac.york.soprano.sbt.architecture.fuzzingoperations.*;
+import uk.ac.york.soprano.sbt.architecture.config.ConnectionProperties;
+import uk.ac.york.soprano.sbt.architecture.data.*;
+
+import uk.ac.york.soprano.sbt.architecture.tts.TTSSimulator;
+import uk.ac.york.soprano.sbt.architecture.simulator.SimCore;
+import uk.ac.york.soprano.sbt.evolutionary.utilities.TestRunnerUtils;
+
+
+import metrics.custom.*;
+import metrics.fixed.*;
+
+public class [%= testNameString %]_TestRunner {
+
+	[% if (useGUI) { %]
+	private static final long MIN_DEBUG_STEP_TIME = 100;
+	[% } else {%]
+	private static final long MIN_DEBUG_STEP_TIME = 10;
+	[% } %]
+	
+	private static final boolean USE_STEP_RATE_LIMITING = true;
+
+	public static boolean extraDebugWait(long millisLastStep) {
+		if (USE_STEP_RATE_LIMITING) {
+			Instant instant = Instant.now();
+			long timeNow = instant.toEpochMilli();
+			long delay = timeNow - millisLastStep;
+			if (delay < MIN_DEBUG_STEP_TIME) {
+				try {
+					Thread.sleep(MIN_DEBUG_STEP_TIME - delay);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}	
+			return true;
+		} else {
+			// If not using rate limiting, exit immediately
+			return true;
+		}
+	}
+
+	public static void main(String[] args) {
+	
+		final String TESTNAME = "[%= testNameString %]";
+		
+		// JRH: needed to increase the number of buffers used
+		Configuration cfg = new Configuration();
+		int defaultLocalParallelism = 1;
+		cfg.setString("taskmanager.network.numberOfBuffers", "4096");
+		
+		StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment(defaultLocalParallelism, cfg);
+		env.setBufferTimeout(0);
+		
+		[%
+		// Build up map of all fuzzOps by name
+		// Generate all the objects and add them to a Java list to preprocess 
+		var allFuzzOps = new Map;
+		var fuzzOpCount = 0;
+		for (fuzzOp in test.operations) {
+			var fuzzOpName = "fuzzOp" + fuzzOpCount;
+			fuzzOpCount++;
+			allFuzzOps.put(fuzzOpName, fuzzOp); 
+			
+			if (fuzzOp.variableToAffect != null) {
+				fuzzingVars.add(fuzzOp.variableToAffect);
+			}
+		%]
+		[% } %]
+		
+		[* Java version of fuzzing topics to use in runtime checks to send back *]
+		List<String> fuzzingTopics = new ArrayList<String>();
+		[% for (v in fuzzingVars) { %]
+		fuzzingTopics.add("[%= v.name %]");
+		[% } %]
+		
+		[* If passive monitoring debug flag is enabled, don't send anything back to the
+		simulator *]
+		[%
+		for (debugFlag in test.debugFlags) {
+			if (debugFlag.isKindOf(PassiveMonitorOnly)) {
+				sendBackToSimulator = false; 
+			}
+		}
+		%]
+		
+		Properties properties = new Properties();
+		properties.setProperty("bootstrap.servers", "localhost:9092");
+		properties.setProperty("max.in.flight.requests.per.connection", "1");
+		properties.setProperty("group.id", "test");
+		
+		DataStream<ControlMessage> controlStream = env
+					.addSource(new FlinkKafkaConsumer<ControlMessage>("controlMessages", new ControlMessageSchema(), properties)).returns(ControlMessage.class);
+		
+		
+		DataStream<EventMessage> streamOrig = env
+			.addSource(new FlinkKafkaConsumer<EventMessage>("IN", new EventMessageSchema(), properties)).returns(EventMessage.class);
+			
+		[% if (sanitiseVariables) { %]
+			DataStream<EventMessage> stream = streamOrig.flatMap(new SanitiseFuzzingValues());
+		[% } else { %]
+			DataStream<EventMessage> stream = streamOrig;
+		[% } %]
+		
+		DataStream<EventMessage> streamOut = env
+				.addSource(new FlinkKafkaConsumer<EventMessage>("OUT", new EventMessageSchema(), properties))
+				.returns(EventMessage.class);
+		
+		// Kafka Sink to OUT
+		FlinkKafkaProducer<EventMessage> myProducer = new FlinkKafkaProducer<EventMessage>("OUT", // target topic
+				new EventMessageSchema(), properties);
+				
+		// This connects the metrics via Kafka to the metrics monitoring on the SESAME tool
+		FlinkKafkaProducer<MetricMessage> metricsProducer = new FlinkKafkaProducer<MetricMessage>(
+		        "metricMessages",             // target topic
+		        new MetricMessageSchema(),    // serialization schema
+		        properties             // producer config
+		      );
+					
+		[* CUSTOM TTS CODE - START *]
+		[%
+		if (simulator.isTypeOf(TTSSimulator)) { %]
+			[% var launchDelayMsec = mrs.launchDelaySeconds * 1000; %]
+		TTSSimulator ttsSim = new TTSSimulator();
+		ConnectionProperties cp = new ConnectionProperties();
+		HashMap<String, String> params = new HashMap<String,String>();
+		HashMap<String, Object> propsMap = new HashMap<String, Object>();
+		propsMap.put(ConnectionProperties.HOSTNAME, "[%=simulator.hostname %]");
+		propsMap.put(ConnectionProperties.PORT, [%=simulator.port %]);
+		// TODO: hardcoded step size for now
+		
+		[% if (useStepping) { %]
+		propsMap.put(ConnectionProperties.STEP_SIZE, 20);
+		[% } %]
+		cp.setProperties(propsMap);
+				
+		params.put("TTSProjectDir", "[%= launchFileLocation %]");
+		params.put("launchDelayMsec", "[%= launchDelayMsec %]");
+		
+		// Preprocessing before simulation starts
+		System.out.println("Preprocessing Phase before Simulator Start");
+		
+		[% for (fOName in allFuzzOps.keySet()) {
+		var fuzzOp = allFuzzOps.get(fOName); %]
+		FuzzingOperation [%= fOName %] = [%= produceFOGenerationSignature(fuzzOp) %]; 
+		[%= fOName %].preprocessing();
+		[% } %]
+		
+		System.out.print("TTS Simulator Starting...");
+		ttsSim.run(params);
+		[* This incorporates a delay before the simulator starts *]
+		[* waitForSeconds([%= mrs.launchDelaySeconds %]); *]
+		System.out.println("TTS Simulator Started... connecting");
+		ttsSim.connect(cp);	
+		[* CUSTOM TTS CODE - END *]
+		[% } %]
+				
+		[% for (aTopic in allTopics) { %]
+		Thread subscriber_thread_[%=aTopic.name.replace("/","_")%] = new Thread() {
+			public void run() {
+				System.out.println("Subscriber [%=aTopic.name.replace("/","_")%] Starts");
+				[% if (fuzzingVars.contains(aTopic)) { %]
+				ttsSim.consumeFromTopic("[%=aTopic.name%]", "[%=aTopic.type.name %]", true, "IN", true);
+				[% } else { %]
+				ttsSim.consumeFromTopic("[%=aTopic.name%]", "[%=aTopic.type.name %]", true, "IN", false);
+				[% } %]
+			}
+		};
+		subscriber_thread_[%=aTopic.name.replace("/","_")%].start();
+		[% } %]
+
+		Thread time_subscriber = new Thread() {
+			public void run() {
+				System.out.println("updateTime starting");
+				ttsSim.updateTime();
+			}
+		};
+		time_subscriber.start();
+		
+		Thread from_out_to_sim = new Thread() {
+			public void run() {
+				
+				long millisLastStep = 0;
+				System.out.println("From out to sim starts");
+						
+				[% if (useStepping) { %]
+					while (ttsSim.stepSimulator() && extraDebugWait(millisLastStep)) {			
+				[% } else { %]
+					while (true) {
+				[% } %]			
+					ConsumerRecords<Long, EventMessage> cr = DataStreamManager.getInstance().consume("OUT");
+					for (ConsumerRecord<Long, EventMessage> record : cr) {
+						String inTopic = record.value().getTopic().toString();
+						String outTopic = ttsSim.translateTopicNameForOutput(inTopic);
+						
+						long timestamp = record.value().getTimestamp();
+						EventMessage er = record.value();
+						
+						Instant instant = Instant.now();
+						long timeOut = instant.toEpochMilli();
+						long timeIn = er.getIN_walltime();
+						long millisWallDelay = timeOut - timeIn;
+						// Update last step time from now
+						millisLastStep = timeOut;
+												
+						[* TODO: only the fuzzingVars should be reflected back to the simulator! *]
+						System.out.println("OUT TO SIM: inTopic = " + inTopic + " -> " + outTopic);
+						[% if (recordDelay) { %]
+						System.out.println("delaytiming," + "," + timeIn + "," + timeOut + "," + millisWallDelay);
+						[% } %]
+						
+						[% if (sendBackToSimulator) { %]
+							[% if (not sendBackAllTopics) { %]
+							if (fuzzingTopics.contains(inTopic)) { 
+							[% } %]
+							ttsSim.publishToTopic(outTopic, record.value().getType(), record.value().getValue().toString());
+						
+							[* closing brace only inserted when sendBackAllTopics not used *]
+							[% if (not sendBackAllTopics) { %]
+							} 
+							[% } %]
+						[% } else { %]
+						// Not sending anything back to simulator - passive monitoring only
+						[% } %]
+					}
+				}
+			}
+		}; 
+		from_out_to_sim.start();
+		
+		// Generate keyed streams
+		KeyedStream<EventMessage, String> topicKeyedIn = stream.keyBy(value -> value.getTopic());
+		KeyedStream<EventMessage, String> topicKeyedOut = streamOut.keyBy(value -> value.getTopic());
+		KeyedStream<EventMessage, String> testKeyedIn = stream.keyBy(value -> "[%= test.name %]");
+		KeyedStream<EventMessage, String> testKeyedOut = streamOut.keyBy(value -> "[%= test.name %]");;
+		
+		
+		ConnectedStreams<EventMessage,ControlMessage> eventsAndControlIn = testKeyedIn.connect(controlStream).keyBy(e -> TESTNAME,m -> TESTNAME);
+		ConnectedStreams<EventMessage,ControlMessage> eventsAndControlOut = testKeyedOut.connect(controlStream).keyBy(e -> TESTNAME,m -> TESTNAME);
+		
+		[* For attack times metric *]
+		List<Double> fuzzOpTimes = new ArrayList<Double>(); 
+		
+		[% for (fuzzOp in test.operations) { %]
+			[%= produceTimeString(fuzzOp) %]
+		[% } %]
+		
+		
+		[* Stream metrics here *]
+		[% for (sMetric in Testing!StreamMetric.all()) { %]
+			[* Don't generate any mapping streams for direct message generation metrics *]
+			[% if (not sMetric.isKindOf(DirectMessageGenerationMetric)) { %]
+				[% if (sMetric.streams.size() == 2) {
+				var stream1 = sMetric.streams.get(0);
+				var stream2 = sMetric.streams.get(1); %]
+				ConnectedStreams<EventMessage, EventMessage> [%= sMetric.name %]combinedStream = [%= streamJavaName(sMetric,stream1) %].connect([%= streamJavaName(sMetric,stream2) %]);
+				DataStream<Double> [%= sMetric.name %]resStream = [%= sMetric.name %]combinedStream.process(new [%= sMetric.name %]Metric([%= additionalInfo(sMetric) %]));
+				[% } %]
+				
+				[% if (sMetric.streams.size() == 1) { 
+				var stream = sMetric.streams.get(0); %]
+				DataStream<Double> [%= sMetric.name %]resStream = [%= streamJavaName(sMetric,stream) %].process(new [%= sMetric.name %]Metric([%= additionalInfo(sMetric) %]));
+				[% } %]
+			[% } %]
+		[% } %]
+		
+		[* TODO: Add the topic metrics here *]
+		
+		SimCore simcore = SimCore.getInstance();
+		simcore.setTestName(TESTNAME);
+		[* StreamMetrics *]
+		
+		[%  var parentCampaign = test.parentCampaign;
+			var campaignMetrics = parentCampaign.metrics.clone();
+			// allMetrics has to include all the metrics, both those  used in the fuzzing experiment and the condition metrics
+			var allMetrics = campaignMetrics.includingAll(parentCampaign.conditionMetrics).asSet();
+		    for (sMetric in allMetrics.selectByKind(StreamMetric)) { %] 
+		    [% if (sMetric.isKindOf(DirectMessageGenerationMetric)) { %]
+		    [* For direct message generation metrics, create a metric message stream from a subclass of DirectMessageGenerationMetric, that directly produces metric messages *]
+		    // DIRECT MESSAGE GENERATION METRIC
+		    DataStream<MetricMessage> metricMsg[%= sMetric.name %] = eventsAndControlIn.process(new [%= sMetric.name %]Metric([%= additionalInfo(sMetric) %]));
+		    [% } else { %]
+			[* Map doubles from the metric message stream into the metric message stream to be unified later *]
+			DataStream<MetricMessage> metricMsg[%= sMetric.name %] = [%= sMetric.name %]resStream.map(d -> new MetricMessage("[%=test.name.firstToUpperCase() %]", "[%= sMetric.name %]", d));
+			[% } %]
+		[% } %]
+		
+		[% for (sMetric in allMetrics.selectByKind(StreamMetric)) { %]
+			[* If the stream has a FileStreamResult, log it to a file *]
+			[% if (sMetric.res.isTypeOf(Testing!FileStreamResult)) { 
+				var filename = sMetric.res.filename; %] 
+
+				final FileSink<String> [%= sMetric.name %]streamFileSink = FileSink
+				    .forRowFormat(new Path("[%= filename %]-[%= testNameString %]"), new SimpleStringEncoder<String>("UTF-8"))
+			    	.withRollingPolicy(
+				        DefaultRollingPolicy.builder()
+			            	.withRolloverInterval(TimeUnit.MINUTES.toMillis(150))
+			            	.withInactivityInterval(TimeUnit.MINUTES.toMillis(50))
+			            	.withMaxPartSize(1024 * 1024 * 1024)
+				            .build())
+					.build();
+				metricMsg[%= sMetric.name %].map(msg -> msg.timeStampedValString()).sinkTo([%= sMetric.name %]streamFileSink);
+			[% } %]
+		[% } %]
+		
+		DataStream<MetricMessage> allMetrics = 		
+		[* Create the unioned metric stream and link to the producer *]
+		[% 	if (allMetrics.size() > 0) {
+		
+			var firstMetric = allMetrics.removeAt(0); %]
+		metricMsg[%= firstMetric.name%]
+		
+		[* One element has been removed from allMetrics - so compare against zero, not one! *]
+		[% if (allMetrics.size() > 0) {
+				for (metric in allMetrics) { %]
+		.union(metricMsg[%= metric.name %])
+				[% }
+		} %]	
+		[% } %];
+		
+		
+		[% if (campaignMetrics.size() > 0) { %]
+		DataStream<MetricMessage> campaignMetrics =
+		[% var firstM = campaignMetrics.removeAt(0); %]
+		metricMsg[%= firstM.name %]
+		
+		[% if (campaignMetrics.size() > 0) {
+				for (metric in campaignMetrics) { %]
+		.union(metricMsg[%= metric.name %])
+				[% }
+		} %]	
+		[% } %];
+		
+		campaignMetrics.addSink(metricsProducer);		
+		ConnectedStreams<EventMessage,MetricMessage> streamFO0 = stream.connect(allMetrics).keyBy(e -> TESTNAME,m -> TESTNAME);
+		
+		[% var foStreamCount = 0;
+		   var foLen = allFuzzOps.size();
+		   
+			if (foLen > 0) {    
+		   	   for (fuzzOpName in allFuzzOps.keySet()) {
+		      var inputStream = "streamFO" + foStreamCount;
+		      var outputStream = "streamFO" + (foStreamCount + 1);
+		      foStreamCount++;
+		      if (foStreamCount < foLen) { %]
+		      	[* For the first stream, we require to produce an output with an EventStream only *]
+			   	ConnectedStreams<EventMessage,MetricMessage> [%= outputStream %] = [%= inputStream %].
+					process([%= fuzzOpName %]).connect(allMetrics).keyBy(e -> TESTNAME, m -> TESTNAME);
+ 			[% } else { %]
+				[* For the final stream, we require to produce an output with an EventStream only *]
+		   		DataStream<EventMessage> [%= outputStream %] = [%= inputStream %].process([%= fuzzOpName %]);
+				[% }
+		   		} %]
+			streamFO[%= foLen %].addSink(myProducer);
+		   [% } else { %]
+		   // Case with empty fuzzing operations
+		   stream.addSink(myProducer);
+		   [% } %]
+		
+		try {
+			env.execute();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static void waitForSeconds(long timeDelaySeconds) {
+		long endTimeMillis = System.currentTimeMillis() + timeDelaySeconds * 1000;
+		while (System.currentTimeMillis() < endTimeMillis) {
+			try {
+				Thread.sleep(endTimeMillis - System.currentTimeMillis());
+			} catch (InterruptedException e) {
+				
+			}
+		}
+	}
+}
+
+[%
+
+// TODO: this operation should be factored out into template for ROS/TTS interface etc
+
+operation streamJavaName(sMetric, stream) {
+		if (stream.isTypeOf(Testing!InputStream)) {
+			return "eventsAndControlIn";
+		}
+	
+		if (stream.isTypeOf(Testing!OutputStream)) {
+			return "eventsAndControlOut";
+		}
+}
+
+operation produceFOGenerationSignature(fuzzOp) {
+	// For successful compilation, className must match the EGL generator for the fuzzing operation - 
+	// defined in fuzzOpCommon.egl and in the orchestrator.egx
+	var className = fuzzOp.name.firstToUpperCase() + "_" + fuzzOp.sequenceNumInTest + "_" + fuzzOp.containingTest.name.firstToUpperCase();
+	var generateFO = "new " + className + "(); // TODO: add the timing/condition in a comment here";
+	return generateFO;
+}
+
+operation produceTimeString(fuzzOp) {
+	var aaList = fuzzOp.activation;
+	var str="";
+	for (aa in aaList) {
+		if (aa.isKindOf(FixedTimeActivation)) {
+			str = "fuzzOpTimes.add(Double.valueOf(" + (aa.endTime - aa.startTime) + "));\n";
+		}
+	}
+	return str;
+}
+
+operation additionalInfo(sMetric) {
+	if (sMetric.isTypeOf(FuzzingOperationTimesMetric)) {
+		return "fuzzOpTimes";
+	} else {
+		if (sMetric.isTypeOf(StartEndTimingMetric)) {
+			return "TESTNAME";
+		} else {
+			return "";
+		}
+	}
+}
+
+operation getAllFuzzingVars() {
+
+}
+%]

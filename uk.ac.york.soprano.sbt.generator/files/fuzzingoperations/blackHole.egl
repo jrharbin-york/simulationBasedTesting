@@ -1,0 +1,45 @@
+[% var commonTemplate : Template = TemplateFactory.load("fuzzingoperations/fuzzOpCommon.egl");
+
+var extraImports = new List();
+commonTemplate.populate("fuzzOp", fuzzOp);
+commonTemplate.populate("classNameMiddle", "Delay");
+commonTemplate.populate("extraImports", extraImports);
+commonTemplate.populate("useRandomSeed", false);
+%]
+
+[%= commonTemplate.process() %]
+
+	public void open(Configuration parameters) throws Exception {
+		super.open(parameters);
+	}
+	
+	public void processElement1(EventMessage value, Context ctx, Collector<EventMessage> out) throws Exception { 
+		String topic = value.getTopic();
+		System.out.println("frequency = " + frequency);
+		if (value.getTopic().contains(topic) && isReadyNow()) {
+			[* Should always discard in the blackhole operation *]
+			boolean shouldDiscard = true;
+			
+			try {
+				double origVal = Double.parseDouble((String)value.getValue());
+				System.out.println("packetLoss," + genValue  + "," + frequency + "," + origVal + "," + shouldDiscard);
+			} catch (NumberFormatException e) {
+				// Ignore error when origVal is not numeric
+			} 
+			
+			if (shouldDiscard) {
+				//System.out.println("DISCARDING: Message on " + topic + " discarded");
+			} else {
+				//System.out.println("ALLOWING: Message on " + topic + " allowed");
+				out.collect(value);
+			}
+		} else {
+			System.out.println("ALLOWING: Message " + value);
+			out.collect(value);
+		}	
+	}
+	
+	public void preprocessing() {
+	
+	}
+}

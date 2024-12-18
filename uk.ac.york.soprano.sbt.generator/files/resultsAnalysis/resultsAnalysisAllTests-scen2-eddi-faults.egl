@@ -1,0 +1,199 @@
+[%
+var campaignName = "scenario2-eddi-timebased-faults"; 
+
+var targetType = Testing!ResultSetStatus#INTERMEDIATE;
+	
+var testSpace = Testing!TestingSpace.all().first();
+
+for (campaign in testSpace.campaigns) {
+	if (campaign.name.equals(campaignName)) {
+		var firstTest = campaign.performedTests.first();
+		%][%= "TestID\t\t\t\t\t\t" + getAllM
+		etrics(firstTest, true) %]
+		[% 	for (test in campaign.performedTests) { 
+		%]Test:[%= test.name + "\t\t" %][%= getAllMetrics(test, false) %] [%= getOperations(test.operations) %]
+		[%
+		}
+	}
+}
+	
+operation getAllMetrics(test, header) {
+	var str = "";
+	for (metricInstance in test.metrics) {
+		var res = metricInstance.result;
+		if (header) {
+			str = str + res.name + "\t\t\t";
+		} else {
+			//var valStr = res.value.toString();
+			str = str + res.value.format("%.3f") + "\t\t\t";
+		}
+	}
+	return str;
+}
+
+operation getDoubleRange(doubleRange) {
+	return "[" + doubleRange.lowerBound.format("%.2f") + "-" + doubleRange.upperBound.format("%.2f") + "]";
+}
+
+operation getValueSet(valueSet) {
+	if (valueSet.type.name.equals("DoubleRange")) {
+		return getDoubleRange(valueSet);
+	}
+}
+
+operation getMultipleValueSets(valueSets) {
+	var str = "";
+	for (valueSet in valueSets) {
+		str = str + getValueSet(valueSet);
+	}
+	return str;
+}
+
+operation getActivation(aa) {
+	var str = aa.type.name + ":";
+	if (aa.type.name.equals("FixedTimeActivation")) {
+		str = str + "{" + aa.startTime.format("%.1f") + "->" + aa.endTime.format("%.1f") + "}"; 
+	}
+	
+	if (aa.type.name.equals("ConditionBasedActivation")) {
+		str = str + "{starting:" + generateCondBoolean(aa.starting) + "},{ending:" + generateCondBoolean(aa.ending) + "}";
+	}
+	
+	return str;
+}
+
+operation getOperation(fuzzingOp) {
+	var str = fuzzingOp.name;
+	var typeName = fuzzingOp.type.name;
+	
+	if (typeName.equals("RandomValueFromSetOperation")) {
+		str = str + "(" + getMultipleValueSets(fuzzingOp.valueSet) + ")";
+	}
+	
+	if (typeName.equals("LatencyNetworkOperation")) {
+		str = str + "(" + getDoubleRange(fuzzingOp.latency) + ")";
+	}
+	
+	if (typeName.equals("PacketLossNetworkOperation")) {
+		str = str + "(" + getDoubleRange(fuzzingOp.frequency) + ")";
+	}
+	
+	//if (typeName.equals("CustomFuzzingOperation")) {
+	//	str = str + "(" + getDoubleRange(frequency) + ")";
+	//}
+	
+	str = str + getActivation(fuzzingOp.activation);
+	return str;
+}
+
+operation getOperations(fuzzingOps) {
+	var str = fuzzingOps.size() + ":";
+	for (fuzzOp in fuzzingOps) {
+		str = str + getOperation(fuzzOp) + ",";
+	}
+	return str;
+}
+
+//-----------------------------------------------------------------
+
+operation generateBinLogicOp(binop) {
+	if (binop == BinaryLogicalOperation#AND) {
+		return "&&";
+	}
+	
+	if (binop == BinaryLogicalOperation#OR) {
+		return "||";
+	}
+}
+
+operation generateBinComp(binop) {
+	if (binop == BinaryComparisonOperation#LESS_THAN) {
+		return "<";
+	}
+	
+	if (binop == BinaryComparisonOperation#GREATER_THAN) {
+		return ">";
+	}
+	
+	if (binop == BinaryComparisonOperation#EQUALS) {
+		return "==";
+	}
+}
+
+operation generateCondElement(c) {
+	if (c.isTypeOf(CompositeCondition)) {
+		return "(" + generateCondElement(c.left) + ") " + generateBinLogicOp(c.binop) + " (" + generateCondElement(c.right) + ")";
+	}
+	
+	if (c.isTypeOf(BasicCondition)) {
+		return "(" + generateCondElement(c.left) + ") " + generateBinComp(c.bincomp) + " (" + generateCondElement(c.right) + ")";
+	}
+	
+	if (c.isTypeOf(ConditionVariable)) {
+		var vn = c.metric.name;
+		// Put named variable into global list
+		return vn;
+	}
+	
+	if (c.isTypeOf(ConditionInteger)) {
+		return c.value;
+	}
+}
+
+operation generateCondBoolean(cond) {
+	return generateCondElement(cond.c);
+}
+
+operation getVarsForCond(fuzzOp, cond) {
+	return varNames;
+}
+
+operation getInitValue(varName) {
+	var campaign = fuzzOp.containingTest.parentCampaign;
+    var metrics = campaign.conditionMetrics;
+    var initVal = null;
+    for (m in metrics) {
+        if (m.name == varName) {
+        	if (m.initValue != null) {
+        		initVal = m.initValue.defaultVal;
+        	}
+        }
+    }
+    return initVal;
+}
+
+operation generateProperty(prop) {
+	if (prop.isTypeOf(IntRange)) {
+		var v = (prop.lowerBound + prop.upperBound) / 2;
+		return "new Integer(" + v + ")";
+	}
+	
+	if (prop.isTypeOf(DoubleRange)) {
+		var v = (prop.lowerBound + prop.upperBound) / 2;
+		return "new Double(" + v + ")";
+	}
+	
+	if (prop.isTypeOf(PointRange)) {
+		var px = (prop.minPoint.x + prop.maxPoint.x) / 2;
+		var py = (prop.minPoint.y + prop.maxPoint.y) / 2;
+		var pz = (prop.minPoint.z + prop.maxPoint.z) / 2;
+		return "new Point3D(" + px + "," + py + "," + pz + ")";
+	}
+	
+	if (prop.isTypeOf(StringSet)) {
+		// Add the string to everything here
+		if (prop.choices.size() > 0) { 
+			var string = prop.choices.first();
+			return "new String(\"" + string + "\")";
+		} else {
+			return "new String(\"\")";
+		}
+	}
+
+	if (prop.isTypeOf(ExternalResourceSet)) {
+		var loc = prop.location;
+		return "new String(\"" + loc + "\")";
+	}
+}
+
+%]

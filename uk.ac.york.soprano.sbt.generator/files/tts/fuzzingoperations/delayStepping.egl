@@ -1,0 +1,102 @@
+[% var commonTemplate : Template = TemplateFactory.load("fuzzingoperations/fuzzOpCommon.egl");
+
+var imports = new List();
+imports.add("org.apache.flink.api.common.state.MapState");
+imports.add("org.apache.flink.api.common.state.MapStateDescriptor");
+imports.add("org.apache.flink.api.common.typeinfo.TypeHint");
+imports.add("org.apache.flink.api.common.typeinfo.TypeInformation");
+imports.add("org.apache.flink.configuration.Configuration");
+imports.add("org.apache.flink.streaming.api.TimerService");
+imports.add("java.util.List");
+imports.add("java.util.ArrayList");
+imports.add("java.util.Iterator");
+imports.add("java.util.Map.Entry");
+
+commonTemplate.populate("fuzzOp", fuzzOp);
+commonTemplate.populate("classNameMiddle", "FlatMap");
+commonTemplate.populate("extraImports", imports);
+commonTemplate.populate("useRandomSeed", true);
+commonTemplate.populate("extraConstructorMethodCall", "setupDelayParams");
+
+var stateExtraTag = fuzzOp.name + "-" + fuzzOp.sequenceNumInTest;
+var delayTimeVal = fuzzOp.latency.lowerBound;
+%]
+
+[%= commonTemplate.process() %]
+
+	private double delayTime;
+	private final long STEP_SIZE_MILLIS = 10;
+	private long messageCount = 0;
+	private MapState<Double,List<EventMessage>> queue;
+
+	private void setupDelayParams() {
+		this.delayTime = Math.round([%= delayTimeVal %] * 1000.0); 
+	} 
+
+	public void open(Configuration parameters) throws Exception {
+		super.open(parameters);
+		String queueName = "queue-[%= stateExtraTag %]";
+		this.queue = getRuntimeContext().getMapState(new MapStateDescriptor<>(queueName, 
+				TypeInformation.of(Double.class),
+				TypeInformation.of(new TypeHint<List<EventMessage>>() {})));
+	}
+	
+	public void processElement1(EventMessage value, Context ctx, Collector<EventMessage> out) throws Exception {
+		if (value.getTopic().contains(topic) && isReadyNow()) {
+			double simTime = SimCore.getInstance().getTime();
+			
+			[% if (fuzzOp.randomised) { %] 
+			double scheduledTime = simTime + rng.nextDouble() * delayTime;
+			[% } else { %]
+			double scheduledTime = simTime + delayTime;
+			[% } %]
+			
+			//long stepTimer = currentTime + STEP_SIZE_MILLIS;
+			value.setSimTimeIn(simTime);
+			value.setDebugSequenceNumber(messageCount++);
+		
+			List<EventMessage> currentPending = queue.get(scheduledTime);
+			if (currentPending == null) {
+				currentPending = new ArrayList<EventMessage>();
+			}
+			currentPending.add(value);
+			queue.put(scheduledTime, currentPending);
+			System.out.println("Added message to queue at " + simTime + " - scheduled for " + scheduledTime);
+		} else {
+			out.collect(value);
+		}
+		
+		// If the steps are regular, we can just check every step... but some robots
+		// may be static so no regular updates?
+		checkForPendingRecords(out);
+	}
+	
+	private void checkForPendingRecords(Collector<EventMessage> out) {
+		double simCoreTime = SimCore.getInstance().getTime();
+
+		try {
+			for (Iterator<Entry<Double, List<EventMessage>>> it = queue.entries().iterator(); it.hasNext();) {
+				Entry<Double, List<EventMessage>> entry = it.next();
+				double schedTime = entry.getKey();
+				if (simCoreTime >= schedTime) {
+					List<EventMessage> queuedMsgs = entry.getValue();
+					for (EventMessage m : queuedMsgs) {
+						double simCoreTimeIn = m.getSimTimeIn();
+						String val = m.getValue().toString();
+						long seqnum = m.getDebugSequenceNumber();
+						double actualDelay = simCoreTime - simCoreTimeIn;
+						System.out.println("delayTracking," + seqnum + "," + simCoreTimeIn + "," + simCoreTime + "," + actualDelay + "," + val);
+						out.collect(m);
+					}
+					it.remove();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void preprocessing() {
+
+	}	
+}

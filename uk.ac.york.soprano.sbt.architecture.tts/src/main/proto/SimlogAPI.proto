@@ -1,0 +1,211 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option java_package = "simlog.server";
+option java_multiple_files = true;
+
+
+package simulation.server;
+
+enum StatusCode {
+  ERROR = 0;
+  CREATED = 1;
+  EXISTING = 2;
+}
+
+
+/**
+ * Simulation service.
+ */
+service SimlogAPI {
+
+    /**
+    * Sets the step of the simulation
+    */
+    rpc setStepSize(StepSizeRequest) returns (google.protobuf.Empty);
+
+    /**
+    * Steps the simulation
+    */
+    rpc step(StepRequest) returns (StepResponse);
+
+    /**
+     * Gets a topi descriptor
+     */
+    rpc GetTopic(TopicDescriptor) returns (TopicDescriptor);
+
+
+    /**
+    * Subscribes to a topic descriptor
+    */
+    rpc Subscribe(TopicDescriptor) returns (stream ROSMessage);
+
+
+    /**
+    * Inject a overwriting topic (shadow) on top of another topic (shadowed)
+    * The method automatically creates an observer of the shadowed topic
+    */
+    rpc Inject(InjectRequest) returns (stream ROSMessage);
+
+    /**
+    * Opens a topic stream for writing
+    */
+    rpc Publish(stream PubRequest) returns (google.protobuf.Empty);
+
+
+}
+
+message StepSizeRequest{
+    
+    int64 step = 1; 
+}
+
+message StepRequest{
+    
+}
+
+message StepResponse{
+    
+    int32 code = 1;
+}
+
+message InjectRequest{
+    
+    /**
+    * Descriptor of the shadow topic
+    */
+    TopicDescriptor injected = 1;
+
+    /**
+    * Descriptor of the shadowed topic
+    */
+    TopicDescriptor target = 2;
+}
+
+
+message PubRequest {
+    
+    TopicDescriptor topic = 1;
+
+    ROSMessage data = 2;
+}
+
+
+
+/**
+ * Request to create a new project.
+ */
+message TopicDescriptor {
+    
+    // full path of the topic
+    string path = 1;
+
+    /**
+    * type of the message
+    */
+    string msgType = 2;    
+}
+
+message ROSMessage{
+
+    string type = 1;
+
+    string value = 2;
+
+    oneof content {
+        JointTrajectory joint_trajectory = 3;
+        Point point = 4;
+        PointStamped point_stamped = 5;
+        Quaternion quaternion = 6;
+        //QuaternionStamped quaternion_stamped = 7;
+        JointTrajectoryPoint joint_trajectory_point = 8;
+        Header timeStamp = 9;
+        SafetyZone safety_zone = 10;
+        SafetyZoneCmd safety_zone_cmd = 11;
+    }
+}
+
+/**
+ * Generic result message of success.
+ */
+message Result {
+    bool success = 1;
+}
+
+message time {
+    uint64 sec = 1;
+    uint64 nsec = 2;
+}
+
+message duration {
+    uint64 msec = 1;
+}
+
+message Header {
+    uint32 seq = 1;
+    time stamp = 2;
+    string frame_id = 3;
+}
+
+message JointTrajectoryPoint {
+    /* 
+    Each trajectory point specifies either positions[, velocities[, accelerations]]
+    or positions[, effort] for the trajectory to be executed.
+    All specified values are in the same order as the joint names in JointTrajectory.msg
+    */
+
+    repeated float positions = 1;
+    repeated float velocities = 2;
+    repeated float accelerations = 3;
+    repeated float effort = 4;
+    duration time_from_start = 5;
+}
+
+message JointTrajectory {
+    Header header = 1;
+    repeated string joint_names = 2;
+    repeated JointTrajectoryPoint points = 3;
+}
+
+message Pose {
+    /* A representation of pose in free space, composed of position and orientation. */
+    Point position = 1;
+    Quaternion orientation = 2;
+}
+
+message PointStamped {
+    /* This represents a Point with reference coordinate frame and timestamp */
+    Header header = 1;
+    Point point = 2;
+}
+
+message Point {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+message Quaternion{
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    float w = 4;
+}
+
+message SafetyZone{
+    Header header = 1;
+    string zone = 2;
+    float level = 3;
+    string object1 = 4;
+    string object2 = 5;
+}
+
+message SafetyZoneCmd{
+    string zone = 1;
+    string cmd = 2;
+}
+
+
+
+

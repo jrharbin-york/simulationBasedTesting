@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated TestingMM -->
+      <package
+            uri="TestingMM"
+            class="uk.ac.york.soprano.sbt.dsl.generated.TestingPackage.TestingPackagePackage"
+            genModel="models/TestingMM.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated TestingMM -->
+      <package
+            uri="FuzzingOperations"
+            class="uk.ac.york.soprano.sbt.dsl.generated.TestingPackage.FuzzingOperations.FuzzingOperationsPackage"
+            genModel="models/TestingMM.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated TestingMM -->
+      <package
+            uri="Metrics"
+            class="uk.ac.york.soprano.sbt.dsl.generated.TestingPackage.Metrics.MetricsPackage"
+            genModel="models/TestingMM.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated TestingMM -->
+      <package
+            uri="Results"
+            class="uk.ac.york.soprano.sbt.dsl.generated.TestingPackage.Results.ResultsPackage"
+            genModel="models/TestingMM.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated TestingMM -->
+      <package
+            uri="StandardGrammar"
+            class="uk.ac.york.soprano.sbt.dsl.generated.TestingPackage.StandardGrammar.StandardGrammarPackage"
+            genModel="models/TestingMM.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated TestingMM -->
+      <package
+            uri="MRSPackage"
+            class="uk.ac.york.soprano.sbt.dsl.generated.TestingPackage.MRSPackage.MRSPackagePackage"
+            genModel="models/TestingMM.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated TestingMM -->
+      <package
+            uri="Execution"
+            class="uk.ac.york.soprano.sbt.dsl.generated.TestingPackage.Execution.ExecutionPackage"
+            genModel="models/TestingMM.genmodel"/>
+   </extension>
+
+</plugin>

@@ -1,0 +1,294 @@
+[* TODO: factor out commmon content for operations *]
+
+[% var classNameExt = fuzzOp.containingTest.name.firstToUpperCase();%]
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Map.Entry;
+import java.util.Iterator;
+
+import java.util.List;
+import java.util.HashMap;
+import java.util.Random;
+import datatypes.*;
+//import datatypes.custom.*;
+
+import org.apache.flink.api.common.state.MapState;
+import org.apache.flink.api.common.state.MapStateDescriptor;
+import org.apache.flink.api.common.typeinfo.TypeHint;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.streaming.api.TimerService;
+
+import org.apache.flink.util.Collector;
+
+import org.json.simple.*;
+
+//import fuzzingoperations.custom.*;
+
+import uk.ac.york.soprano.sbt.architecture.utilities.ParsingUtils;
+import uk.ac.york.soprano.sbt.architecture.data.EventMessage;
+
+import uk.ac.york.soprano.sbt.architecture.fuzzingoperations.*;
+import uk.ac.york.soprano.sbt.architecture.simulator.SimCore;
+
+public class [%=fuzzOp.name%]Delay_[%= classNameExt %] extends [%= superClassName() %] {
+
+	[% var varNames = new Set; %]
+
+	private static final long serialVersionUID = 1L;
+	private long delayTime;
+	Random rng;
+	
+	protected String getUniqueID() {
+		return "[%= fuzzOp.name %]-[%= fuzzOp.sequenceNumInTest %]";
+	}
+	
+	private MapState<Long,List<EventMessage>> queue;
+
+	[% if (fuzzOp.activation.isTypeOf(FixedTimeActivation)) { %]
+	public [%=fuzzOp.name%]Delay_[%= classNameExt %](String topic, double start, double end, double time, long seed) {
+		super(topic,start,end);
+		this.rng = new Random(seed);
+		this.delayTime = Math.round(time * 1000.0); 
+		System.out.println("Creating new latency delay operation, time seconds = " + time + ",delayTime = " + delayTime);
+	}
+	[% } %]
+	
+	[% if (fuzzOp.activation.isTypeOf(ConditionBasedActivation)) { 
+		var startCond = fuzzOp.activation.starting;
+		var endCond = fuzzOp.activation.ending;
+	%]
+	
+	public [%=fuzzOp.name%]Delay_[%= classNameExt %](String topic, double time, long seed) {
+		super(topic);
+		this.rng = new Random(seed);
+		this.delayTime = Math.round(time * 1000.0); 
+	}
+	
+	protected boolean evalStartCondition() {
+		boolean res = false;
+		try {
+			///// GENERATED CUSTOM CONDITION CODE START - STARTCOND
+			[% var startCondString = generateCondBoolean(startCond);
+			   var varList = getVarsForCond(fuzzOp, startCond); %]
+			[% for (v in varList) { %]
+				Double [%= v %] = (Double) varState.get("[%= v %]");
+				if ([%= v %] == null) {
+					[% var initValue = getInitValue(v); 
+					   if (initValue != null) { %]
+					   		[%= v %] = [%= getInitValue(v) %];
+					[% } else { %]    		
+					   		return false;
+					[% } %] 
+				}	
+		    [% } %]
+		    res = [%= startCondString %];
+			///// GENERATED CUSTOM CONDITION CODE END - STARTCOND
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return res;
+	}
+	
+	protected boolean evalEndCondition() {
+		boolean res = false;
+		try {
+			///// GENERATED CUSTOM CONDITION CODE START - ENDCOND
+			[% var endCondString = generateCondBoolean(endCond);
+			   var varList = getVarsForCond(fuzzOp, endCond); %]
+			[% for (v in varList) { %]
+				Double [%= v %] = (Double) varState.get("[%= v %]");
+				if ([%= v %] == null) {
+					[% var initValue = getInitValue(v); 
+					   if (initValue != null) { %]
+					   		[%= v %] = [%= getInitValue(v) %];
+					[% } else { %]    		
+					   		return false;
+					[% } %] 
+				}	
+		    [% } %]
+			res = [%= endCondString %];
+			///// GENERATED CUSTOM CONDITION CODE END - STARTCOND
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return res;
+	}
+	[% } %]
+	
+	public void open(Configuration parameters) throws Exception {
+		super.open(parameters);
+		String queueName = "queue-[%= classNameExt %]";
+		this.queue = getRuntimeContext().getMapState(new MapStateDescriptor<>(queueName, 
+				TypeInformation.of(Long.class),
+				TypeInformation.of(new TypeHint<List<EventMessage>>() {})));
+	}
+	
+	public void processElement1(EventMessage value, Context ctx, Collector<EventMessage> out) throws Exception {
+		if (value.getTopic().equals(topic) && isReadyNow()) {
+			long currentTime = ctx.timestamp();
+			long scheduledTime = currentTime + Math.round(rng.nextDouble() * delayTime);
+			double simTime = SimCore.getInstance().getTime();
+			value.setSimTimeIn(simTime);
+		
+			List<EventMessage> currentPending = queue.get(scheduledTime);
+		
+			if (currentPending == null) {
+				currentPending = new ArrayList<EventMessage>();
+			}
+			currentPending.add(value);
+			queue.put(scheduledTime, currentPending);
+			System.out.println("currentTime = " + currentTime + ",sim time=" + simTime + ", scheduling new timer at " + scheduledTime);
+			ctx.timerService().registerProcessingTimeTimer(scheduledTime);
+			// Duplication sends out now, and also schedules the timer to send again later
+			out.collect(value);
+		} else {
+			out.collect(value);
+		}
+	}
+	
+	public void onTimer(long timestamp, OnTimerContext ctx, Collector<EventMessage> out) {
+		long currentTime = ctx.timestamp();
+		double simCoreTime = SimCore.getInstance().getTime();
+
+		try {
+			for (Iterator<Entry<Long, List<EventMessage>>> it = queue.entries().iterator(); it.hasNext();) {
+				Entry<Long, List<EventMessage>> entry = it.next();
+				long schedTime = entry.getKey();
+				if (currentTime >= schedTime) {
+					List<EventMessage> queuedMsgs = entry.getValue();
+					for (EventMessage m : queuedMsgs) {
+						double simCoreTimeIn = m.getSimTimeIn();
+						double actualDelay = simCoreTime - simCoreTimeIn;
+						System.out.println("delay," + currentTime + "," + simCoreTimeIn + "," + simCoreTime + "," + actualDelay);
+						out.collect(m);
+					}
+					it.remove();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void preprocessing() {
+
+	}	
+}
+
+[% 
+operation superClassName() {
+	if (fuzzOp.activation.isTypeOf(FixedTimeActivation)) {
+		return "TimeBasedFuzzingOperation";	
+	}
+
+	if (fuzzOp.activation.isTypeOf(ConditionBasedActivation)) {
+		return "ConditionBasedFuzzingOperation";	
+	}
+}
+
+operation generateBinLogicOp(binop) {
+	if (binop == BinaryLogicalOperation#AND) {
+		return "&&";
+	}
+	
+	if (binop == BinaryLogicalOperation#OR) {
+		return "||";
+	}
+}
+
+operation generateBinComp(binop) {
+	if (binop == BinaryComparisonOperation#LESS_THAN) {
+		return "<";
+	}
+	
+	if (binop == BinaryComparisonOperation#GREATER_THAN) {
+		return ">";
+	}
+	
+	if (binop == BinaryComparisonOperation#EQUALS) {
+		return "==";
+	}
+}
+
+operation generateCondElement(c) {
+	if (c.isTypeOf(CompositeCondition)) {
+		return "(" + generateCondElement(c.left) + ") " + generateBinLogicOp(c.binop) + " (" + generateCondElement(c.right) + ")";
+	}
+	
+	if (c.isTypeOf(BasicCondition)) {
+		return "(" + generateCondElement(c.left) + ") " + generateBinComp(c.bincomp) + " (" + generateCondElement(c.right) + ")";
+	}
+	
+	if (c.isTypeOf(ConditionVariable)) {
+		var vn = c.metric.name;
+		// Put named variable into global list
+		varNames.add(vn);
+		return vn;
+	}
+	
+	if (c.isTypeOf(ConditionInteger)) {
+		return c.value;
+	}
+}
+
+operation generateCondBoolean(cond) {
+	return generateCondElement(cond.c);
+}
+
+operation getVarsForCond(fuzzOp, cond) {
+	return varNames;
+}
+
+operation getInitValue(varName) {
+	var campaign = fuzzOp.containingTest.parentCampaign;
+    var metrics = campaign.conditionMetrics;
+    var initVal = null;
+    for (m in metrics) {
+        if (m.name == varName) {
+        	if (m.initValue != null) {
+        		initVal = m.initValue.defaultVal;
+        	}
+        }
+    }
+    return initVal;
+}
+
+operation generateProperty(prop) {
+	if (prop.isTypeOf(IntRange)) {
+		var v = (prop.lowerBound + prop.upperBound) / 2;
+		return "new Integer(" + v + ")";
+	}
+	
+	if (prop.isTypeOf(DoubleRange)) {
+		var v = (prop.lowerBound + prop.upperBound) / 2;
+		return "new Double(" + v + ")";
+	}
+	
+	if (prop.isTypeOf(PointRange)) {
+		var px = (prop.minPoint.x + prop.maxPoint.x) / 2;
+		var py = (prop.minPoint.y + prop.maxPoint.y) / 2;
+		var pz = (prop.minPoint.z + prop.maxPoint.z) / 2;
+		return "new Point3D(" + px + "," + py + "," + pz + ")";
+	}
+	
+	if (prop.isTypeOf(StringSet)) {
+		// Add the string to everything here
+		if (prop.choices.size() > 0) { 
+			var string = prop.choices.first();
+			return "new String(\"" + string + "\")";
+		} else {
+			return "new String(\"\")";
+		}
+	}
+
+	if (prop.isTypeOf(ExternalResourceSet)) {
+		var loc = prop.location;
+		return "new String(\"" + loc + "\")";
+	}
+}
+
+%]
+

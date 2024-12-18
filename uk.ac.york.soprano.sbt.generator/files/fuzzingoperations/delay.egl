@@ -1,0 +1,91 @@
+[* This is the old version which uses the Flink timers, that are now inaccurate *]
+
+[% var commonTemplate : Template = TemplateFactory.load("fuzzingoperations/fuzzOpCommon.egl");
+
+var imports = new List();
+imports.add("org.apache.flink.api.common.state.MapState");
+imports.add("org.apache.flink.api.common.state.MapStateDescriptor");
+imports.add("org.apache.flink.api.common.typeinfo.TypeHint");
+imports.add("org.apache.flink.api.common.typeinfo.TypeInformation");
+imports.add("org.apache.flink.configuration.Configuration");
+imports.add("org.apache.flink.streaming.api.TimerService");
+imports.add("java.util.List");
+imports.add("java.util.ArrayList");
+imports.add("java.util.Iterator");
+imports.add("java.util.Map.Entry");
+
+commonTemplate.populate("fuzzOp", fuzzOp);
+commonTemplate.populate("classNameMiddle", "FlatMap");
+commonTemplate.populate("extraImports", imports);
+commonTemplate.populate("useRandomSeed", true);
+commonTemplate.populate("extraConstructorMethodCall", "setupDelayParams");
+
+var stateExtraTag = fuzzOp.name + "-" + fuzzOp.sequenceNumInTest;
+var delayTimeVal = fuzzOp.latency.lowerBound;
+%]
+
+[%= commonTemplate.process() %]
+	[% var varNames = new Set; %]
+
+	private long delayTime;
+	private MapState<Double,List<EventMessage>> queue;
+	
+	private void setupDelayParams() {
+		this.delayTime = Math.round([%= delayTimeVal %] * 1000.0); 
+	}
+		
+	public void open(Configuration parameters) throws Exception {
+		super.open(parameters);
+		String queueName = "queue-[%= stateExtraTag %]";
+		this.queue = getRuntimeContext().getMapState(new MapStateDescriptor<>(queueName, 
+				TypeInformation.of(Double.class),
+				TypeInformation.of(new TypeHint<List<EventMessage>>() {})));
+	}
+	
+	public void checkQueues(double currentTime, Context ctx, Collector<EventMessage> out) {
+		try {
+			for (Iterator<Entry<Double, List<EventMessage>>> it = queue.entries().iterator(); it.hasNext();) {
+				Entry<Double, List<EventMessage>> entry = it.next();
+				double schedTime = entry.getKey();
+				if (currentTime >= schedTime) {
+					List<EventMessage> queuedMsgs = entry.getValue();
+					for (EventMessage m : queuedMsgs) {
+						double simCoreTimeIn = m.getSimTimeIn();
+						double actualDelay = currentTime - simCoreTimeIn;
+						System.out.println("delayTracking:currentTime," + currentTime + "," + simCoreTimeIn + "," + actualDelay);
+						out.collect(m);
+					}
+					it.remove();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void enqueueMessage(EventMessage value, double currentTime, double scheduledTime) throws Exception {
+		System.out.println("currentTime = " + currentTime + ": scheduling for delivery at " + scheduledTime);
+		List<EventMessage> currentPending = queue.get(scheduledTime);
+		if (currentPending == null) {
+			currentPending = new ArrayList<EventMessage>();
+		}
+		currentPending.add(value);
+		queue.put(scheduledTime, currentPending);
+	}
+	
+	public void processElement1(EventMessage value, Context ctx, Collector<EventMessage> out) throws Exception {
+		if (value.getTopic().contains(topic) && isReadyNow()) {
+			double simTime = SimCore.getInstance().getTime();
+			value.setSimTimeIn(simTime);			
+			double scheduledTime = simTime + (rng.nextDouble() * delayTime);
+			enqueueMessage(value, simTime, scheduledTime);
+			checkQueues(simTime, ctx, out);
+		} else {
+			out.collect(value);
+		}
+	}
+	
+	public void preprocessing() {
+
+	}
+}

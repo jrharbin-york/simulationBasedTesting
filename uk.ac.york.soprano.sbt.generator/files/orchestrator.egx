@@ -1,0 +1,105 @@
+// For successful compilation, className must match the EGL generators for the fuzzing operation and test runner 
+// defined in fuzzOpCommon.egl, and in the ttsMain.egl rosMain.egl
+operation getClassNamePath(fuzzOp) {
+	var javaFile = fuzzOp.name.firstToUpperCase() + "_" + fuzzOp.sequenceNumInTest + "_" + fuzzOp.containingTest.name.firstToUpperCase();
+	return "src/" + javaFile + ".java";
+}
+
+rule test2ClassROS transform test: Testing!Test {
+	guard : Testing!ROSSimulator.all().notEmpty()
+	template : "ros/rosMain.egl"
+	target : "src/" + test.name.firstToUpperCase() + "_TestRunner.java"
+}
+
+rule test2ClassTTS transform test: Testing!Test {
+	guard : Testing!TTSSimulator.all().notEmpty()
+	template : "tts/ttsMain.egl"
+	target : "src/" + test.name.firstToUpperCase() + "_TestRunner.java"
+}
+
+rule packetLoss2FlatMap transform fuzzOp: Testing!PacketLossNetworkOperation {
+	guard : fuzzOp.containingTest != null
+	template : "fuzzingoperations/packetLoss.egl"
+	target : getClassNamePath(fuzzOp)
+}
+
+rule blackHole2FlatMap transform fuzzOp: Testing!BlackholeNetworkOperation {
+	guard : fuzzOp.containingTest != null
+	template : "fuzzingoperations/blackHole.egl"
+	target : getClassNamePath(fuzzOp)
+}
+
+rule fuzzRange2FlatMap transform fuzzOp: Testing!RandomValueFromSetOperation {
+	guard : (fuzzOp.containingTest != null) and (fuzzOp.variableToAffect.isKindOf(EventBasedVariable))
+	template : "fuzzingoperations/fuzzRange.egl"
+	target : getClassNamePath(fuzzOp)
+}
+
+rule fuzzRangeParam2FlatMap transform fuzzOp: Testing!RandomValueFromSetOperation {
+	guard : fuzzOp.containingTest != null and (fuzzOp.variableToAffect.isKindOf(ParameterVariable))
+	template : "fuzzingoperations/fuzzRangeParam.egl"
+	target : getClassNamePath(fuzzOp)
+}
+
+rule customOp2FlatMap transform fuzzOp: Testing!CustomFuzzingOperation {
+	guard : fuzzOp.containingTest != null
+	template : "fuzzingoperations/customOp.egl"	
+	target : getClassNamePath(fuzzOp)
+}
+
+// Delay when not using TTS - use timers for time-tracking 
+rule delayFlatMapTimers transform fuzzOp: Testing!LatencyNetworkOperation {
+	guard : (fuzzOp.containingTest != null) and Testing!TTSSimulator.all().isEmpty()
+	template : "fuzzingoperations/delay.egl"
+	target : getClassNamePath(fuzzOp)
+}
+
+// Delay when using TTS and not stepping
+rule delayTTSStepping transform fuzzOp: Testing!LatencyNetworkOperation {
+	guard : (fuzzOp.containingTest != null) and Testing!TTSSimulator.all().notEmpty() and (Testing!TTSSimulator.all().first().useStepping == false)
+	template : "fuzzingoperations/delay.egl"	
+	target : getClassNamePath(fuzzOp)
+}
+
+// Delay when using TTS and stepping
+rule delayTTSStepping transform fuzzOp: Testing!LatencyNetworkOperation {
+	guard : (fuzzOp.containingTest != null) and Testing!TTSSimulator.all().notEmpty() and (Testing!TTSSimulator.all().first().useStepping == true)
+	template : "tts/fuzzingoperations/delayStepping.egl"	
+	target : getClassNamePath(fuzzOp)
+}
+
+rule rangeClass transform testCampaign: Testing!TestCampaign {
+	guard : Testing!DoubleRange.all().notEmpty()
+	template : "datatypes/doubleRange.egl"
+	target : "src/datatypes/DoubleRange.java"
+}
+
+// New POM generation for distributed-expt
+rule generatePOM transform testingSpace: Testing!TestingSpace {
+	template : "pom/pomXML.egl"
+	target : "pom.xml"
+}
+
+rule generateCompilationScript transform testingSpace: Testing!TestingSpace {
+	template : "scripts/compile.egl"
+	target : "scripts/compile.sh"
+}
+
+rule generateExecutionScript transform testingSpace: Testing!TestingSpace {
+	template : "scripts/execute.egl"
+	target : "scripts/execute.sh"
+}
+
+rule generateTerminate transform testingSpace: Testing!TestingSpace {
+	template : "scripts/terminate.egl"
+	target : "scripts/terminate.sh"
+}
+
+rule generateCleanup transform testingSpace: Testing!TestingSpace {
+	template : "scripts/cleanup.egl"
+	target : "scripts/cleanup.sh"
+}
+
+
+
+

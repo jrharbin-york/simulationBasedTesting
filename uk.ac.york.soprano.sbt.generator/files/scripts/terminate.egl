@@ -1,0 +1,70 @@
+#!/bin/sh
+
+killall -9 roscore
+killall -9 rosrun
+killall -9 rostopic
+killall -9 turtlesim_node
+killall -9 roslaunch
+killall -9 rosbag
+killall -9 python
+killall -9 python2
+killall -9 python2.7
+killall -9 python3
+killall -9 gzclient
+killall -9 gzserver
+killall -9 rviz
+killall -9 px4
+killall -9 rosout
+killall -9 rosmaster
+killall -9 rosbridge_server
+killall -9 rosbridge_client
+killall -9 ual_backend_mavros_server
+killall -9 obstacle_publisher_3d
+killall -9 RelocatePlane_node
+killall -9 RelocateWing_node
+killall -9 static_transform_publisher
+killall -9 mavros_node
+killall -9 turtle_teleop_key
+killall -9 robot_state_publisher
+killall -9 move_base
+killall -9 amcl
+killall -9 map_server
+killall -9 map_navigation_corridor_white.py
+killall -9 map_navigation_corridor_white*.py
+killall -9 map_navigation_corridor_white_autostart.py
+killall -9 scan_unifier_node
+killall -9 lamp_manager_node
+killall -9 scan_unifier_node
+
+#killall -9 ros2
+
+pkill -f TestRunner
+pkill -9 -f DDDSimulatorProject
+
+# Kill the ROS2 nodes under test code
+pkill -f "ros2_env/bin/python"
+sleep 1
+pkill -f "ros2_env/bin/python" -9 
+
+pkill -f "combined_clock_publisher.py"
+sleep 1
+pkill -f "combined_clock_publisher.py" -9
+
+kill $(ps aux | grep run_turtlesim.sh | grep xterm | awk '{print $2}')
+kill $(ps aux | grep run_turtlebot.sh | grep xterm | awk '{print $2}')
+kill $(ps aux | grep run_eterry.sh | grep xterm | awk '{print $2}')
+kill $(ps aux | grep run_rosbag.sh | grep xterm | awk '{print $2}')
+
+# TODO: need to only kill the named containers
+docker stop $(docker ps -q --filter ancestor=turtlebot3 )
+docker stop $(docker ps -q --filter ancestor=eterry )
+docker stop $(docker ps -q --filter ancestor=rosbag )
+
+killall -9 rosbag
+echo "Clearing Kafka topics"
+/home/jharbin/academic/soprano/SPWorkerTemp/soprano_code/scripts/clear_kafka.sh
+
+# Need to add wait to ensure nodes are killed
+sleep 15
+
+exit 0

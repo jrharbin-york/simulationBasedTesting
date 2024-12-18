@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/uk.ac.york.soprano.sbt.dsl/src" modelPluginID="uk.ac.york.soprano.sbt.dsl"
+    modelName="TestingMM" editorPluginClass="uk.ac.york.soprano.sbt.dsl.generated.TestingPackage.presentation.TestingMMEditorPlugin"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="5.0" copyrightFields="false" operationReflection="true" importOrganizing="true">
+  <foreignModel>TestingMM.ecore</foreignModel>
+  <genPackages prefix="TestingPackage" basePackage="uk.ac.york.soprano.sbt.dsl.generated"
+      disposableProviderFactory="true" ecorePackage="TestingMM.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="TestingMM.ecore#//ResultSetStatus">
+      <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//ResultSetStatus/FINAL"/>
+      <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//ResultSetStatus/INTERMEDIATE"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="TestingMM.ecore#//DimensionID">
+      <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//DimensionID/T1_TIME_MIDPOINT_MEAN"/>
+      <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//DimensionID/T2_TIME_LENGTH_MEAN"/>
+      <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//DimensionID/T3_TIME_MIDPOINT_VAR"/>
+      <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//DimensionID/P1_PARAMETER_MEAN"/>
+      <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//DimensionID/P2_PARAMETER_VARIANCE"/>
+      <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//DimensionID/O1_FUZZRANGE_COUNT"/>
+      <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//DimensionID/O2_DELAY_COUNT"/>
+      <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//DimensionID/O3_DELETION_COUNT"/>
+      <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//DimensionID/O0_TOTAL_COUNT"/>
+    </genEnums>
+    <genClasses ecoreClass="TestingMM.ecore#//TestingSpace">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//TestingSpace/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//TestingSpace/metrics"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//TestingSpace/possibleFuzzingOperations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//TestingSpace/campaigns"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//TestingSpace/mrs"/>
+    </genClasses>
+    <genClasses ecoreClass="TestingMM.ecore#//TestCampaign">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//TestCampaign/name"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TestingMM.ecore#//TestCampaign/metrics"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TestingMM.ecore#//TestCampaign/conditionMetrics"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//TestCampaign/activationGeneration"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TestingMM.ecore#//TestCampaign/includedOperations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//TestCampaign/approach"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//TestCampaign/performedTests"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//TestCampaign/resultSets"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//TestCampaign/endTrigger"/>
+    </genClasses>
+    <genClasses ecoreClass="TestingMM.ecore#//Test">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Test/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//Test/operations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//Test/metrics"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TestingMM.ecore#//Test/developedFrom"/>
+      <genFeatures property="Readonly" notify="false" createChild="false" ecoreFeature="ecore:EReference TestingMM.ecore#//Test/parentCampaign"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//Test/debugFlags"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="TestingMM.ecore#//TestDebuggingFlags"/>
+    <genClasses ecoreClass="TestingMM.ecore#//PassiveMonitorOnly"/>
+    <genClasses image="false" ecoreClass="TestingMM.ecore#//ActivationGenerationMethod"/>
+    <genClasses ecoreClass="TestingMM.ecore#//TimeBasedActivationGenerationMethod"/>
+    <genClasses ecoreClass="TestingMM.ecore#//ConditionBasedActivationGenerationMethod">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//ConditionBasedActivationGenerationMethod/conditionDepth"/>
+    </genClasses>
+    <genClasses ecoreClass="TestingMM.ecore#//CampaignResultSet">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//CampaignResultSet/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//CampaignResultSet/status"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TestingMM.ecore#//CampaignResultSet/results"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="TestingMM.ecore#//ExecutionEndTrigger"/>
+    <genClasses ecoreClass="TestingMM.ecore#//TimeBasedEnd">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//TimeBasedEnd/timeLimitSeconds"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="TestingMM.ecore#//TestGenerationApproach"/>
+    <genClasses ecoreClass="TestingMM.ecore#//RandomTestGeneration"/>
+    <genClasses image="false" ecoreClass="TestingMM.ecore#//EvolutionaryAlgorithm"/>
+    <genClasses ecoreClass="TestingMM.ecore#//NSGAEvolutionaryAlgorithm">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//NSGAEvolutionaryAlgorithm/populationSize"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//NSGAEvolutionaryAlgorithm/iterations"/>
+    </genClasses>
+    <genClasses ecoreClass="TestingMM.ecore#//NSGAWithCoverageCells">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//NSGAWithCoverageCells/coveragePerCell"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//NSGAWithCoverageCells/targetCoverageProportion"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//NSGAWithCoverageCells/dimensionRecords"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//NSGAWithCoverageCells/coverageBoostingStrategy"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="TestingMM.ecore#//CoverageBoostingStrategy">
+      <genOperations ecoreOperation="TestingMM.ecore#//CoverageBoostingStrategy/elementShouldUseCoverageBoosting">
+        <genParameters ecoreParameter="TestingMM.ecore#//CoverageBoostingStrategy/elementShouldUseCoverageBoosting/i"/>
+        <genParameters ecoreParameter="TestingMM.ecore#//CoverageBoostingStrategy/elementShouldUseCoverageBoosting/genNum"/>
+        <genParameters ecoreParameter="TestingMM.ecore#//CoverageBoostingStrategy/elementShouldUseCoverageBoosting/boostingCountThisGeneration"/>
+      </genOperations>
+    </genClasses>
+    <genClasses ecoreClass="TestingMM.ecore#//FixedNSGACoverageBoostingStrategy">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FixedNSGACoverageBoostingStrategy/useBoostingOnceEveryGenerations"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FixedNSGACoverageBoostingStrategy/useBoostingOnceEveryIterations"/>
+    </genClasses>
+    <genClasses ecoreClass="TestingMM.ecore#//LinearNSGACoverageBoostingStrategy">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//LinearNSGACoverageBoostingStrategy/useBoostingOnceEveryGenerations"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//LinearNSGACoverageBoostingStrategy/startingBoostingCount"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//LinearNSGACoverageBoostingStrategy/endingBoostingCount"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//LinearNSGACoverageBoostingStrategy/countDropEveryGeneration"/>
+    </genClasses>
+    <genClasses ecoreClass="TestingMM.ecore#//DimensionInterval">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//DimensionInterval/dimID"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//DimensionInterval/minValue"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//DimensionInterval/maxValue"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//DimensionInterval/count"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//DimensionInterval/extraData"/>
+    </genClasses>
+    <genClasses ecoreClass="TestingMM.ecore#//RepeatedExecution">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference TestingMM.ecore#//RepeatedExecution/testToRepeat"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//RepeatedExecution/repeatCount"/>
+    </genClasses>
+    <nestedGenPackages prefix="FuzzingOperations" disposableProviderFactory="true"
+        ecorePackage="TestingMM.ecore#//FuzzingOperations">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="TestingMM.ecore#//FuzzingOperations/RandomValueFromSetChoice">
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//FuzzingOperations/RandomValueFromSetChoice/RANDOM_FROM_SEED"/>
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//FuzzingOperations/RandomValueFromSetChoice/ALWAYS_LOW"/>
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//FuzzingOperations/RandomValueFromSetChoice/ALWAYS_HIGH"/>
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//FuzzingOperations/RandomValueFromSetChoice/KEEP_SAME_RANGE"/>
+      </genEnums>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//FuzzingOperations/FuzzingOperation">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/FuzzingOperation/name"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/FuzzingOperation/priority"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/FuzzingOperation/activation"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/FuzzingOperation/messagesFromAllComponenents"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/FuzzingOperation/fromNodes"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/FuzzingOperation/messagesToAllComponenents"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/FuzzingOperation/toNodes"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/FuzzingOperation/nodeToFuzz"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/FuzzingOperation/allPublishingVars"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/FuzzingOperation/allSubscribingVars"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/FuzzingOperation/fromTemplate"/>
+        <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/FuzzingOperation/containingTest"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/FuzzingOperation/recordedTimings"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/FuzzingOperation/seed"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/FuzzingOperation/sequenceNumInTest"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/FuzzingOperation/inclusionProbability"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/FuzzingOperation/includeInTiming"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/FuzzingOperation/conditionConstraints"/>
+        <genOperations ecoreOperation="TestingMM.ecore#//FuzzingOperations/FuzzingOperation/dup"/>
+        <genOperations ecoreOperation="TestingMM.ecore#//FuzzingOperations/FuzzingOperation/findReduction"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//FuzzingOperations/Activation"/>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/ConstantActivation"/>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//FuzzingOperations/DynamicActivation"/>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/FixedTimeActivation">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/FixedTimeActivation/startTime"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/FixedTimeActivation/endTime"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/ConditionBasedActivation">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/ConditionBasedActivation/starting"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/ConditionBasedActivation/ending"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/ConditionBasedActivation/maximumActivations"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/ConditionBasedTimeLimited">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/ConditionBasedTimeLimited/starting"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/ConditionBasedTimeLimited/length"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/ConditionBasedTimeLimited/maximumActivations"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/VariableOperation">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/VariableOperation/variableToAffect"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/CustomFuzzingOperation">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/CustomFuzzingOperation/params"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/CustomFuzzingOperation/customProcessClass"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/RandomValueFuzzingOperation"/>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/RandomValueFromSetOperation">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/RandomValueFromSetOperation/valueSet"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/RandomValueFromSetOperation/isRelative"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/ValueSet">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/ValueSet/propertyName"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//FuzzingOperations/ValueRange">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/ValueRange/randChoice"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/IntRange">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/IntRange/lowerBound"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/IntRange/upperBound"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/DoubleRange">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/DoubleRange/lowerBound"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/DoubleRange/upperBound"/>
+        <genOperations ecoreOperation="TestingMM.ecore#//FuzzingOperations/DoubleRange/findReduction"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/Point">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/Point/x"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/Point/y"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/Point/z"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/PointRange">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/PointRange/minPoint"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/PointRange/maxPoint"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/StringSet">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/StringSet/choices"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/ExternalResourceSet">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/ExternalResourceSet/location"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/NetworkFuzzingOperation">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/NetworkFuzzingOperation/variableToAffect"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/BlackholeNetworkOperation"/>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/LatencyNetworkOperation">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/LatencyNetworkOperation/latency"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//FuzzingOperations/LatencyNetworkOperation/randomised"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/PacketLossNetworkOperation">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/PacketLossNetworkOperation/frequency"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//FuzzingOperations/MultipleMessagesNetworkOperation">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//FuzzingOperations/MultipleMessagesNetworkOperation/howManyClones"/>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Metrics" disposableProviderFactory="true" ecorePackage="TestingMM.ecore#//Metrics">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="TestingMM.ecore#//Metrics/MetricOptimisationDirection">
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//Metrics/MetricOptimisationDirection/HIGHEST"/>
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//Metrics/MetricOptimisationDirection/LOWEST"/>
+      </genEnums>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//Metrics/SimStream"/>
+      <genClasses ecoreClass="TestingMM.ecore#//Metrics/InputStream"/>
+      <genClasses ecoreClass="TestingMM.ecore#//Metrics/OutputStream"/>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//Metrics/Metric">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Metrics/Metric/name"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Metrics/Metric/dir"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//Metrics/Metric/relatedVariables"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//Metrics/Metric/valueIfNotReceived"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//Metrics/Metric/initValue"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Metrics/Metric/useInOptimisation"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//Metrics/MetricDefault">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Metrics/MetricDefault/defaultVal"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//Metrics/VariableMetric">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//Metrics/VariableMetric/chosenVariable"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//Metrics/MetricInstance">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//Metrics/MetricInstance/metric"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//Metrics/MetricInstance/result"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//Metrics/PropertyMetric">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//Metrics/PropertyMetric/property"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//Metrics/StreamMetric">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//Metrics/StreamMetric/streams"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//Metrics/StreamMetric/res"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//Metrics/SpecialMetric"/>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//Metrics/DirectMessageGenerationMetric"/>
+      <genClasses ecoreClass="TestingMM.ecore#//Metrics/StartEndTimingMetric"/>
+      <genClasses ecoreClass="TestingMM.ecore#//Metrics/FuzzingOperationTimesMetric"/>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//Metrics/StreamResult"/>
+      <genClasses ecoreClass="TestingMM.ecore#//Metrics/FileStreamResult">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Metrics/FileStreamResult/filename"/>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Results" disposableProviderFactory="true" ecorePackage="TestingMM.ecore#//Results">
+      <genClasses ecoreClass="TestingMM.ecore#//Results/Result">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Results/Result/name"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Results/Result/value"/>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="StandardGrammar" disposableProviderFactory="true" ecorePackage="TestingMM.ecore#//StandardGrammar">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="TestingMM.ecore#//StandardGrammar/BinaryComparisonOperation">
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//StandardGrammar/BinaryComparisonOperation/LESS_THAN"/>
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//StandardGrammar/BinaryComparisonOperation/GREATER_THAN"/>
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//StandardGrammar/BinaryComparisonOperation/EQUALS"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="TestingMM.ecore#//StandardGrammar/BinaryLogicalOperation">
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//StandardGrammar/BinaryLogicalOperation/AND"/>
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//StandardGrammar/BinaryLogicalOperation/OR"/>
+      </genEnums>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//StandardGrammar/ConditionElement"/>
+      <genClasses ecoreClass="TestingMM.ecore#//StandardGrammar/CompositeCondition">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//StandardGrammar/CompositeCondition/left"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//StandardGrammar/CompositeCondition/right"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//StandardGrammar/CompositeCondition/binop"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//StandardGrammar/BasicCondition">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//StandardGrammar/BasicCondition/left"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//StandardGrammar/BasicCondition/bincomp"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//StandardGrammar/BasicCondition/right"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//StandardGrammar/ConditionExpr"/>
+      <genClasses ecoreClass="TestingMM.ecore#//StandardGrammar/ConditionInteger">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//StandardGrammar/ConditionInteger/value"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//StandardGrammar/ConditionVariable">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//StandardGrammar/ConditionVariable/metric"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//StandardGrammar/Condition">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//StandardGrammar/Condition/name"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//StandardGrammar/Condition/c"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//StandardGrammar/ConditionConstraint"/>
+      <genClasses ecoreClass="TestingMM.ecore#//StandardGrammar/ContainsVariable">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//StandardGrammar/ContainsVariable/metric"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//StandardGrammar/ContainsInteger">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//StandardGrammar/ContainsInteger/minValue"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//StandardGrammar/ContainsInteger/maxValue"/>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="MRSPackage" disposableProviderFactory="true" ecorePackage="TestingMM.ecore#//MRSPackage">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="TestingMM.ecore#//MRSPackage/ParsingMethod">
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//MRSPackage/ParsingMethod/JSON"/>
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//MRSPackage/ParsingMethod/CSV"/>
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//MRSPackage/ParsingMethod/CUSTOM"/>
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//MRSPackage/ParsingMethod/STRING"/>
+      </genEnums>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/MRS">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/MRS/variables"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/MRS/launchDelaySeconds"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/MRS/launchFileLocation"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/MRS/customTerminateFileLocation"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/MRS/recordFileLocation"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/MRS/nodes"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/MRS/simulator"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/MRS/propertyType"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/MRS/execStrategy"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/Node">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/Node/name"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/Node/subscriber"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/Node/publisher"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/Node/properties"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//MRSPackage/GenericVariable">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/GenericVariable/name"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/GenericVariable/type"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/StaticVariable">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/StaticVariable/locations"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//MRSPackage/DynamicVariable"/>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/EventBasedVariable"/>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/ParameterVariable">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/ParameterVariable/componentName"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//MRSPackage/ConfigLocation">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/ConfigLocation/root"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/FileLocation">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/FileLocation/fileName"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/PropertiesKeyValues">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/PropertiesKeyValues/key"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/FixedPosition">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/FixedPosition/lineNum"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/FixedPosition/columnNum"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/RegexLocation">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/RegexLocation/regexFinder"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/XMLConfigLocation">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/XMLConfigLocation/xpathExpression"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/XMLConfigLocation/seperationCharacterAsString"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/XMLConfigLocation/elementNum"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/Type">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/Type/name"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/Type/parsingMethod"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/Type/parameters"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/Parameter">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/Parameter/name"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/Parameter/subparameters"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/Parameter/type"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/ComponentProperty">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/ComponentProperty/name"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/ComponentProperty/type"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//MRSPackage/Simulator">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/Simulator/varConfigs"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/Simulator/simulationDependency"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/ROSSimulator">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/ROSSimulator/hostname"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/ROSSimulator/port"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//MRSPackage/SimVariableConfiguration">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/SimVariableConfiguration/var"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/ROSVariableConfiguration">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//MRSPackage/ROSVariableConfiguration/launchFileloc"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/MOOSSimulator">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/MOOSSimulator/hostname"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/MOOSSimulator/port"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//MRSPackage/TTSSimulator">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/TTSSimulator/hostname"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/TTSSimulator/port"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/TTSSimulator/stepSizeMillis"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/TTSSimulator/useStepping"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//MRSPackage/TTSSimulator/useGUI"/>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Execution" disposableProviderFactory="true" ecorePackage="TestingMM.ecore#//Execution">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="TestingMM.ecore#//Execution/WorkerOS">
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//Execution/WorkerOS/LINUX"/>
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//Execution/WorkerOS/WINDOWS"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="TestingMM.ecore#//Execution/ContainerTechnology">
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//Execution/ContainerTechnology/DOCKER"/>
+        <genEnumLiterals ecoreEnumLiteral="TestingMM.ecore#//Execution/ContainerTechnology/PODMAN"/>
+      </genEnums>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//Execution/ExecutionStrategy">
+        <genOperations ecoreOperation="TestingMM.ecore#//Execution/ExecutionStrategy/isDistributed"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//Execution/LocalExecutionStrategy">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Execution/LocalExecutionStrategy/launchFileLocation"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//Execution/DistributedExecutionStrategy">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Execution/DistributedExecutionStrategy/automaticWorkerDetection"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Execution/DistributedExecutionStrategy/exptRunnerIP"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//Execution/DistributedExecutionStrategy/dependencies"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//Execution/DistributedExecutionStrategy/extraExecutionTargets"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EReference TestingMM.ecore#//Execution/DistributedExecutionStrategy/allocationStrategy"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//Execution/AllocationStrategy"/>
+      <genClasses ecoreClass="TestingMM.ecore#//Execution/DynamicTaskAllocation"/>
+      <genClasses ecoreClass="TestingMM.ecore#//Execution/RoundRobinPreAllocation"/>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//Execution/ExecutionTarget"/>
+      <genClasses ecoreClass="TestingMM.ecore#//Execution/SOPRANOWorkerNode">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Execution/SOPRANOWorkerNode/ipAddress"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Execution/SOPRANOWorkerNode/workerOS"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="TestingMM.ecore#//Execution/Dependency"/>
+      <genClasses ecoreClass="TestingMM.ecore#//Execution/FileTreeDependency"/>
+      <genClasses ecoreClass="TestingMM.ecore#//Execution/ContainerDependency">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Execution/ContainerDependency/imageName"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Execution/ContainerDependency/tech"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//Execution/DerivedContainerDependency">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference TestingMM.ecore#//Execution/DerivedContainerDependency/base"/>
+      </genClasses>
+      <genClasses ecoreClass="TestingMM.ecore#//Execution/ArchiveDependency">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute TestingMM.ecore#//Execution/ArchiveDependency/location"/>
+      </genClasses>
+    </nestedGenPackages>
+  </genPackages>
+</genmodel:GenModel>

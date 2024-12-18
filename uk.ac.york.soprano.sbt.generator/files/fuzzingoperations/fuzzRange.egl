@@ -1,0 +1,88 @@
+[% 
+var commonTemplate : Template = TemplateFactory.load("fuzzingoperations/fuzzOpCommon.egl");
+commonTemplate.populate("fuzzOp", fuzzOp);
+commonTemplate.populate("classNameMiddle", "FlatMap");
+commonTemplate.populate("extraImports", new List());
+commonTemplate.populate("useRandomSeed", true);
+%]
+
+[%= commonTemplate.process() %]
+
+	@Override
+	public void processElement1(EventMessage value, Context ctx, Collector<EventMessage> out) throws Exception { 
+	[%
+		var parsingMethod = fuzzOp.variableToAffect.type.parsingMethod.name;
+		var isFuzzingRelative = fuzzOp.isRelative;
+		var paramCount = 0;
+
+		if (parsingMethod.equalsIgnoreCase("JSON")) { 
+	%]
+			if (value.getTopic().equals(topic) && isReadyNow()) {
+				Object obj = JSONValue.parse(value.getValue().toString());
+	      		JSONObject jo = (JSONObject)obj;
+	      		[* TODO: other ValueSets here *]
+	      	[% for (aParameter in fuzzOp.valueSet) { %]
+	      		double genVal[%= paramCount++ %] = new [%= genDoubleRange(aParameter) %].generateInRange(rng);
+	      		[% if (isFuzzingRelative) { %]
+	      		UpdateLambda lop[%= paramCount %] = ((orig) -> { return ((Double)orig + genVal[%= paramCount %]); });
+				jo = ParsingUtils.updateJSONObject(jo, "[%= aParameter.propertyName %]", lop[%= paramCount %]);
+				[% } else { %]
+				jo = ParsingUtils.updateJSONObject(jo, "[%= aParameter.propertyName %]", genVal[%= paramCount %]);
+				[% } %]
+	      	[% } %]
+	      		EventMessage valueOut = new EventMessage(value);
+	      		valueOut.setValue(jo.toString());
+	      		double time = SimCore.getInstance().getTime();
+	      		System.out.println("fuzzRangeLog," + time + "," + value.toString() + "," + valueOut.toString() + "\n");
+				out.collect(valueOut);
+			} else {
+				out.collect(value);
+			}
+			
+		[% } else if (parsingMethod.equalsIgnoreCase("STRING")) { %]
+			if (value.getTopic().contains(topic) && isReadyNow()) {
+				[* TODO: this will apply them sequentially? should it? *]
+				[% for (aParameter in fuzzOp.valueSet) { %]
+				double newValue = new [%= genDoubleRange(aParameter) %].generateInRange(rng);
+				EventMessage valueOut = new EventMessage(value);
+				[% if (isFuzzingRelative) { %]
+				Double origVal = Double.parseDouble((String)value.getValue());
+				Double fuzzedVal = origVal + newValue;
+				valueOut.setValue(fuzzedVal.toString());
+				double time = SimCore.getInstance().getTime();
+				System.out.println("fuzzRangeLog," + time + "," + origVal + "," + fuzzedVal + "\n");
+				[% } else { %]
+				valueOut.setValue(newValue.toString());
+				System.out.println("fuzzRangeLog," + time + "," + origVal + "," + fuzzedVal + "\n");
+				[% } %]
+				
+	      		[% } %]
+				out.collect(valueOut);
+			} else {
+				out.collect(value);
+			}
+			
+			
+		[% } else if (parsingMethod.equalsIgnoreCase("CSV")) { %]
+			raise Unimplemented("Parsing method CSV is not yet implemented");
+		[% } %]	
+	}	
+}
+
+[%
+// Generate the double range object according to the parameter method choice 
+operation genDoubleRange(aParameter) {
+	if (aParameter.randChoice == RandomValueFromSetChoice#RANDOM_FROM_SEED) {
+		return "DoubleRange(" + aParameter.lowerBound + "," + aParameter.upperBound + ")";
+	}
+	
+	if (aParameter.randChoice == RandomValueFromSetChoice#ALWAYS_LOW) {
+		return "DoubleRange(" + aParameter.lowerBound + "," + aParameter.lowerBound + ")";
+	}
+	
+	if (aParameter.randChoice == RandomValueFromSetChoice#ALWAYS_HIGH) {
+		return "DoubleRange(" + aParameter.upperBound + "," + aParameter.upperBound + ")";
+	}
+}
+%]
+

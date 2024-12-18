@@ -1,0 +1,37 @@
+rule metricAsMultiStream transform metric: Testing!StreamMetric {
+	guard : metric.streams.size() == 2
+	template : "metrics/multiStream.egl"
+	target : "src/metrics/template/" + metric.name + "Metric.java"
+}
+
+rule metricAsSingleStream transform metric: Testing!StreamMetric {
+	guard : metric.streams.size() == 1
+	template : "metrics/singleStream.egl"
+	target : "src/metrics/template/" + metric.name + "Metric.java"
+}
+
+rule generateRunners transform campaign: Testing!TestCampaign {
+	parameters : Map {
+		"path" = path,
+		"testingModelPath" = testingModelPath,
+		"codeGenerationDirectory" = codeGenerationDirectory,
+		"orchestratorBasePath" = orchestratorBasePath
+	}
+	template : "exptrunner/exptrunner.egl"
+	target : "src/main/ExptRunner_" + campaign.name + ".java"
+}
+
+rule genGrammar transform testCampaign: Testing!TestCampaign {
+	template : "grammar/generateGrammar.egl"
+	target : "grammar/soprano-standardgrammar-" + testCampaign.name + ".bnf"
+}
+
+rule generatePOM transform testingSpace: Testing!TestingSpace {
+	template : "pom/pomXML.egl"
+	target : "pom.xml"
+}
+
+rule customOpTemplate transform fuzzOp: Testing!CustomFuzzingOperation {
+	template : "fuzzingoperations/template/customOpTemplate.egl"	
+	target : "src/fuzzingoperations/template/" + fuzzOp.name + ".java"
+}

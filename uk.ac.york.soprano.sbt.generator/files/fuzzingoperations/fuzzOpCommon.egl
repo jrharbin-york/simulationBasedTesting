@@ -1,0 +1,247 @@
+[% 
+var classNameExt = fuzzOp.containingTest.name.firstToUpperCase();
+// This className must match the EGL generator for the simulator, e.g. ttsMain.egl
+// and in orchestrator.egx
+var className = fuzzOp.name.firstToUpperCase() + "_" + fuzzOp.sequenceNumInTest + "_" + classNameExt;
+var topic = fuzzOp.variableToAffect.name;
+var uniqueID = fuzzOp.name + "-" + fuzzOp.sequenceNumInTest;
+ %]
+
+import java.util.Map;
+import java.util.Random;
+import java.util.HashMap;
+import datatypes.DoubleRange;
+
+import org.apache.flink.util.Collector;
+import org.json.simple.*;
+
+import uk.ac.york.soprano.sbt.architecture.utilities.ParsingUtils;
+import uk.ac.york.soprano.sbt.architecture.utilities.UpdateLambda;
+import uk.ac.york.soprano.sbt.architecture.data.EventMessage;
+
+import uk.ac.york.soprano.sbt.architecture.fuzzingoperations.*;
+import uk.ac.york.soprano.sbt.architecture.simulator.SimCore;
+
+[% for (importc in extraImports) { %]
+import [%= importc %];
+[% } %]
+
+public class [%= className %] extends [%= superClassName() %] {
+
+	[% var varNames = new Set;	%]
+	private static final long serialVersionUID = 1L;
+	
+	[% if (useRandomSeed) { %]
+	Random rng;
+	[% } %]
+	
+	protected String getUniqueID() {
+		return "[%= uniqueID %]";
+	}
+
+
+	[* Constructor *]
+	public [%= className %]() {
+		[% if (fuzzOp.activation.isTypeOf(FixedTimeActivation)) { %] 
+		super("[%= topic %]", [%= fuzzOp.activation.startTime %], [%= fuzzOp.activation.endTime %]);
+		[% } %]
+		
+		[% if (fuzzOp.activation.isTypeOf(ConditionBasedActivation)) { %]
+		super("[%= topic %]");
+		[% } %]
+		
+		[% if (fuzzOp.activation.isTypeOf(ConditionBasedTimeLimited)) { %]
+		super("[%= topic %]", [%= fuzzOp.activation.length %]);
+		[% } %]
+		
+		[% if (useRandomSeed) { %] 
+		this.rng = new Random([%= fuzzOp.seed %]L);
+		[% } %] 	
+		
+		[% if (extraConstructorMethodCall.isDefined()) { %]
+		[%= extraConstructorMethodCall %]();
+		[% } %]
+	}
+	
+	[% if (anyTypeOfCondition(fuzzOp)) { %] 
+	protected boolean evalStartCondition() {
+		boolean res = false;
+		try {
+			///// GENERATED CUSTOM CONDITION CODE START - STARTCOND
+			[% 
+			   var startCond = fuzzOp.activation.starting;
+			   var startCondString = generateCondBoolean(startCond);
+			   var varList = getVarsForCond(fuzzOp, startCond); %]
+			[% for (v in varList) { %]
+				Double [%= v %] = (Double) varState.get("[%= v %]");
+				if ([%= v %] == null) {
+					[% var initValue = getInitValue(v); 
+					   if (initValue != null) { %]
+					   		[%= v %] = [%= getInitValue(v) %];
+					[% } else { %]    		
+					   		return false;
+					[% } %] 
+				}	
+		    [% } %]
+		    res = [%= startCondString %];
+			///// GENERATED CUSTOM CONDITION CODE END - STARTCOND
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return res;
+	}
+	[% } %]
+	
+	[* Only generate end conditions for the standard ConditionBasedActivation, not time limited *]
+	[% if (fuzzOp.activation.isTypeOf(ConditionBasedActivation)) { %] 
+	protected boolean evalEndCondition() {
+		boolean res = false;
+		try {
+			///// GENERATED CUSTOM CONDITION CODE START - ENDCOND
+			[%  var endCond = fuzzOp.activation.ending;
+				var endCondString = generateCondBoolean(endCond);
+			   	var varList = getVarsForCond(fuzzOp, endCond); %]
+			[% for (v in varList) { %]
+				Double [%= v %] = (Double) varState.get("[%= v %]");
+				if ([%= v %] == null) {
+					[% var initValue = getInitValue(v); 
+					   if (initValue != null) { %]
+					   		[%= v %] = [%= getInitValue(v) %];
+					[% } else { %]    		
+					   		return false;
+					[% } %] 
+				}	
+		    [% } %]
+			res = [%= endCondString %];
+			///// GENERATED CUSTOM CONDITION CODE END - STARTCOND
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return res;
+	}
+	[% } %]
+
+[%
+
+operation superClassName() {
+	if (fuzzOp.activation.isTypeOf(FixedTimeActivation)) {
+		return "TimeBasedFuzzingOperation";	
+	}
+
+	if (fuzzOp.activation.isTypeOf(ConditionBasedActivation)) {
+		return "ConditionBasedFuzzingOperation";	
+	}
+	
+	if (fuzzOp.activation.isTypeOf(ConditionBasedTimeLimited)) {
+		return "ConditionBasedTimeLimited";	
+	}
+}
+
+operation generateBinLogicOp(binop) {
+	if (binop == BinaryLogicalOperation#AND) {
+		return "&&";
+	}
+	
+	if (binop == BinaryLogicalOperation#OR) {
+		return "||";
+	}
+}
+
+operation generateBinComp(binop) {
+	if (binop == BinaryComparisonOperation#LESS_THAN) {
+		return "<";
+	}
+	
+	if (binop == BinaryComparisonOperation#GREATER_THAN) {
+		return ">";
+	}
+	
+	if (binop == BinaryComparisonOperation#EQUALS) {
+		return "==";
+	}
+}
+
+operation generateCondElement(c) {
+	if (c.isTypeOf(CompositeCondition)) {
+		return "(" + generateCondElement(c.left) + ") " + generateBinLogicOp(c.binop) + " (" + generateCondElement(c.right) + ")";
+	}
+	
+	if (c.isTypeOf(BasicCondition)) {
+		return "(" + generateCondElement(c.left) + ") " + generateBinComp(c.bincomp) + " (" + generateCondElement(c.right) + ")";
+	}
+	
+	if (c.isTypeOf(ConditionVariable)) {
+		var vn = c.metric.name;
+		// Put named variable into global list
+		varNames.add(vn);
+		return vn;
+	}
+	
+	if (c.isTypeOf(ConditionInteger)) {
+		return c.value;
+	}
+}
+
+operation generateCondBoolean(cond) {
+	return generateCondElement(cond.c);
+}
+
+operation getVarsForCond(fuzzOp, cond) {
+	return varNames;
+}
+
+operation getInitValue(varName) {
+	var campaign = fuzzOp.containingTest.parentCampaign;
+    var metrics = campaign.conditionMetrics;
+    var initVal = null;
+    for (m in metrics) {
+        if (m.name == varName) {
+        	if (m.initValue != null) {
+        		initVal = m.initValue.defaultVal;
+        	}
+        }
+    }
+    return initVal;
+}
+
+operation anyTypeOfCondition(fuzzOp) {
+	return (fuzzOp.activation.isTypeOf(ConditionBasedActivation) 
+			or fuzzOp.activation.isTypeOf(ConditionBasedTimeLimited));
+}
+
+operation generateProperty(prop) {
+	if (prop.isTypeOf(IntRange)) {
+		var v = (prop.lowerBound + prop.upperBound) / 2;
+		return "new Integer(" + v + ")";
+	}
+	
+	if (prop.isTypeOf(DoubleRange)) {
+		var v = (prop.lowerBound + prop.upperBound) / 2;
+		return "new Double(" + v + ")";
+	}
+	
+	if (prop.isTypeOf(PointRange)) {
+		var px = (prop.minPoint.x + prop.maxPoint.x) / 2;
+		var py = (prop.minPoint.y + prop.maxPoint.y) / 2;
+		var pz = (prop.minPoint.z + prop.maxPoint.z) / 2;
+		return "new Point3D(" + px + "," + py + "," + pz + ")";
+	}
+	
+	if (prop.isTypeOf(StringSet)) {
+		// Add the string to everything here
+		if (prop.choices.size() > 0) { 
+			var string = prop.choices.first();
+			return "new String(\"" + string + "\")";
+		} else {
+			return "new String(\"\")";
+		}
+	}
+
+	if (prop.isTypeOf(ExternalResourceSet)) {
+		var loc = prop.location;
+		return "new String(\"" + loc + "\")";
+	}
+}
+%]

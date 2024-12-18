@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="ASCII"?>
+<TestingMM:TestingSpace xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="Metrics" xmlns:TestingMM="TestingMM" xmlns:_1="FuzzingOperations" xmlns:_2="MRSPackage" xmlns:_3="Execution" xmi:id="_VMYbMGKhEe6npZ9UVoAbbA" name="turtleMRSDemo">
+  <metrics xsi:type="FuzzingOperationTimesMetric" xmi:id="_V5eHUHZZEe--UbBGoUiFwA" name="fuzzingOperationTimes" dir="LOWEST" useInOptimisation="true">
+    <valueIfNotReceived xmi:id="_a1ShEHZZEe--UbBGoUiFwA" defaultVal="1000.0"/>
+    <initValue xmi:id="_YKRFQHZZEe--UbBGoUiFwA" defaultVal="1000.0"/>
+    <streams xsi:type="InputStream" xmi:id="_5oBHEHZcEe--UbBGoUiFwA"/>
+  </metrics>
+  <metrics xsi:type="StreamMetric" xmi:id="_fW5EAHZZEe--UbBGoUiFwA" name="distanceToPoint3D" relatedVariables="_-onDMCv_EeykGsd0UrLwGA" useInOptimisation="true">
+    <valueIfNotReceived xmi:id="_pHjFwHZZEe--UbBGoUiFwA" defaultVal="-1000.0"/>
+    <initValue xmi:id="_nx4TUHZZEe--UbBGoUiFwA" defaultVal="-1000.0"/>
+    <streams xsi:type="InputStream" xmi:id="_rGs6EHZZEe--UbBGoUiFwA"/>
+  </metrics>
+  <possibleFuzzingOperations xsi:type="_1:RandomValueFromSetOperation" xmi:id="_VixccHWGEe-u3qaJErQubA" name="distortVelocity" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+    <activation xsi:type="_1:FixedTimeActivation" xmi:id="_52pMQHWIEe-u3qaJErQubA" startTime="25.0" endTime="50.0"/>
+    <valueSet xsi:type="_1:DoubleRange" xmi:id="_3Z2EkHWGEe-u3qaJErQubA" propertyName="msg.angular.z" randChoice="ALWAYS_HIGH" lowerBound="-0.5" upperBound="0.5"/>
+  </possibleFuzzingOperations>
+  <campaigns xmi:id="_NglHoHWGEe-u3qaJErQubA" name="validatePredictor" metrics="_V5eHUHZZEe--UbBGoUiFwA _fW5EAHZZEe--UbBGoUiFwA" includedOperations="_VixccHWGEe-u3qaJErQubA">
+    <activationGeneration xsi:type="TestingMM:TimeBasedActivationGenerationMethod" xmi:id="_PG8BcHWGEe-u3qaJErQubA"/>
+    <approach xsi:type="TestingMM:NSGAEvolutionaryAlgorithm" xmi:id="_QBHKsHWGEe-u3qaJErQubA" populationSize="1" iterations="1"/>
+    <endTrigger xsi:type="TestingMM:TimeBasedEnd" xmi:id="__HxHoHWIEe-u3qaJErQubA" timeLimitSeconds="50"/>
+  </campaigns>
+  <campaigns xmi:id="_mMTTQKJkEe-g-auCzqDGyw" name="savedConfigurations" metrics="_V5eHUHZZEe--UbBGoUiFwA _fW5EAHZZEe--UbBGoUiFwA" includedOperations="_VixccHWGEe-u3qaJErQubA">
+    <activationGeneration xsi:type="TestingMM:TimeBasedActivationGenerationMethod" xmi:id="_mMTTQaJkEe-g-auCzqDGyw"/>
+    <approach xsi:type="TestingMM:NSGAEvolutionaryAlgorithm" xmi:id="_mMTTQqJkEe-g-auCzqDGyw" populationSize="1" iterations="1"/>
+    <performedTests xmi:id="_mMT7_aJkEe-g-auCzqDGyw" name="Test_173_08_11_2024_10_07_43">
+      <operations xsi:type="_1:RandomValueFromSetOperation" xmi:id="_mMT7_qJkEe-g-auCzqDGyw" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" xmi:id="_mMT7_6JkEe-g-auCzqDGyw" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" xmi:id="_mMT8AKJkEe-g-auCzqDGyw" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics xmi:id="_mMT8AaJkEe-g-auCzqDGyw" metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result xmi:id="_mMT8AqJkEe-g-auCzqDGyw" name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics xmi:id="_mMT8A6JkEe-g-auCzqDGyw" metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result xmi:id="_mMT8BKJkEe-g-auCzqDGyw" name="distanceToPoint3D" value="1.2177510998945908"/>
+      </metrics>
+    </performedTests>
+    <endTrigger xsi:type="TestingMM:TimeBasedEnd" xmi:id="_mMT-vaJkEe-g-auCzqDGyw" timeLimitSeconds="50"/>
+  </campaigns>
+  <campaigns xmi:id="_ah2o4KJlEe-g-auCzqDGyw" name="repeat173" metrics="_V5eHUHZZEe--UbBGoUiFwA _fW5EAHZZEe--UbBGoUiFwA" includedOperations="_VixccHWGEe-u3qaJErQubA">
+    <approach xsi:type="TestingMM:RepeatedExecution" xmi:id="_cvygEKJlEe-g-auCzqDGyw" testToRepeat="_mMT7_aJkEe-g-auCzqDGyw" repeatCount="30"/>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat0">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.21508722659501592"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat1">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="3.16222046874292"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat2">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.21807740865649988"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat3">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.2352341425358278"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat4">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.22699908908667862"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat5">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.24262337235503617"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat6">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.22647868710938623"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat7">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.21797003864266942"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat8">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.226106214498347"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat9">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.23156032252313266"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat10">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.22705431349101515"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat11">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.22914246251653403"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat12">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.22060308917644195"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat13">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.2379939718897358"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat14">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.23332076418711603"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat15">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.2277583176126119"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat16">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.22710338361178248"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat17">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.22132437793505924"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat18">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.23035738909860878"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat19">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.23574938432070935"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat20">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.22248329730777686"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat21">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.23280671569430192"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat22">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="2.3500418186176"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat23">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.22474123457722364"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat24">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="2.582316604204942"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat25">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.21740093232692762"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat26">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.22879756841191334"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat27">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="1000.0"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="-1000.0"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat28">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.21929145959602817"/>
+      </metrics>
+    </performedTests>
+    <performedTests name="Test_173_08_11_2024_10_07_43_repeat29">
+      <operations xsi:type="_1:RandomValueFromSetOperation" name="distortVelocity" fromTemplate="_VixccHWGEe-u3qaJErQubA" seed="-1580559602121339651" variableToAffect="_ayhwsCv_EeykGsd0UrLwGA">
+        <activation xsi:type="_1:FixedTimeActivation" startTime="49.14546771083438" endTime="49.52164743859236"/>
+        <valueSet xsi:type="_1:DoubleRange" propertyName="msg.angular.z" lowerBound="0.21784583066479335" upperBound="0.38688070743205144"/>
+      </operations>
+      <metrics metric="_V5eHUHZZEe--UbBGoUiFwA">
+        <result name="fuzzingOperationTimes" value="0.3761797277579788"/>
+      </metrics>
+      <metrics metric="_fW5EAHZZEe--UbBGoUiFwA">
+        <result name="distanceToPoint3D" value="0.21667976137043288"/>
+      </metrics>
+    </performedTests>
+    <endTrigger xsi:type="TestingMM:TimeBasedEnd" xmi:id="_eTIiIKJlEe-g-auCzqDGyw" timeLimitSeconds="50"/>
+  </campaigns>
+  <mrs xmi:id="_Z4M2cCv_EeykGsd0UrLwGA" launchDelaySeconds="10" launchFileLocation="/home/jharbin/academic/soprano/turtlebot/docker/run_turtlebot.sh">
+    <variables xsi:type="_2:EventBasedVariable" xmi:id="_ayhwsCv_EeykGsd0UrLwGA" name="/cmd_vel_nav" type="_ksEosCv_EeykGsd0UrLwGA"/>
+    <variables xsi:type="_2:EventBasedVariable" xmi:id="_-onDMCv_EeykGsd0UrLwGA" name="/odom" type="_67hGYCv_EeykGsd0UrLwGA"/>
+    <nodes xmi:id="_gZyUICv_EeykGsd0UrLwGA" name="Turtle1" subscriber="_ayhwsCv_EeykGsd0UrLwGA" publisher="_-onDMCv_EeykGsd0UrLwGA"/>
+    <nodes xmi:id="_iHhnwJSLEeyi3puJ8GqOAQ" name="teleop_key" publisher="_ayhwsCv_EeykGsd0UrLwGA"/>
+    <simulator xsi:type="_2:ROSSimulator" xmi:id="_mtRLoEXuEeybjfS_xnSIvQ" hostname="0.0.0.0" port="9090"/>
+    <propertyType xmi:id="_ksEosCv_EeykGsd0UrLwGA" name="geometry_msgs/msg/Twist">
+      <parameters xmi:id="_l2jiACwDEeykGsd0UrLwGA" name="linear" type="_QNs_sCwCEeykGsd0UrLwGA">
+        <subparameters xmi:id="_VBnvwCwEEeykGsd0UrLwGA" name="X" type="_XPV2cCwCEeykGsd0UrLwGA"/>
+        <subparameters xmi:id="_YR7C4CwEEeykGsd0UrLwGA" name="Y" type="_XPV2cCwCEeykGsd0UrLwGA"/>
+        <subparameters xmi:id="_aLGLACwEEeykGsd0UrLwGA" name="Z" type="_XPV2cCwCEeykGsd0UrLwGA"/>
+      </parameters>
+      <parameters xmi:id="_ucOYgCwdEeykGsd0UrLwGA" name="angular" type="_QNs_sCwCEeykGsd0UrLwGA">
+        <subparameters xmi:id="_xgR_YCwdEeykGsd0UrLwGA" name="X" type="_XPV2cCwCEeykGsd0UrLwGA"/>
+        <subparameters xmi:id="_xgR_YSwdEeykGsd0UrLwGA" name="Y" type="_XPV2cCwCEeykGsd0UrLwGA"/>
+        <subparameters xmi:id="_xgR_YiwdEeykGsd0UrLwGA" name="Z" type="_XPV2cCwCEeykGsd0UrLwGA"/>
+      </parameters>
+    </propertyType>
+    <propertyType xmi:id="_67hGYCv_EeykGsd0UrLwGA" name="nav_msgs/msg/Odometry">
+      <parameters xmi:id="_yR3CwCwcEeykGsd0UrLwGA" name="X" type="_0fIyoCwcEeykGsd0UrLwGA"/>
+      <parameters xmi:id="_60-6YCwcEeykGsd0UrLwGA" name="Y" type="_0fIyoCwcEeykGsd0UrLwGA"/>
+      <parameters xmi:id="_9P5doCwcEeykGsd0UrLwGA" name="theta" type="_0fIyoCwcEeykGsd0UrLwGA"/>
+      <parameters xmi:id="_-V3AICwcEeykGsd0UrLwGA" name="linear_velocity" type="_0fIyoCwcEeykGsd0UrLwGA"/>
+      <parameters xmi:id="_AKcjMCwdEeykGsd0UrLwGA" name="angular_velocity" type="_0fIyoCwcEeykGsd0UrLwGA"/>
+    </propertyType>
+    <propertyType xmi:id="_QNs_sCwCEeykGsd0UrLwGA" name="Vector3"/>
+    <propertyType xmi:id="_XPV2cCwCEeykGsd0UrLwGA" name="float64"/>
+    <propertyType xmi:id="_0fIyoCwcEeykGsd0UrLwGA" name="float32"/>
+    <execStrategy xsi:type="_3:DistributedExecutionStrategy" xmi:id="_zZ5SoHWFEe-u3qaJErQubA" automaticWorkerDetection="false" exptRunnerIP="192.168.1.238">
+      <extraExecutionTargets xsi:type="_3:SOPRANOWorkerNode" xmi:id="_-OHDIHWFEe-u3qaJErQubA" ipAddress="192.168.1.238"/>
+      <allocationStrategy xsi:type="_3:DynamicTaskAllocation" xmi:id="_MM-KsHWGEe-u3qaJErQubA"/>
+    </execStrategy>
+  </mrs>
+</TestingMM:TestingSpace>

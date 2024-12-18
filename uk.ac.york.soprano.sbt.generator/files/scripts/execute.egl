@@ -1,0 +1,11 @@
+#!/bin/sh
+cd $2
+# Compute the classpath dynamically using Maven
+echo "Extracting classpath"
+mvn dependency:build-classpath -Dmdep.outputFile=classpath.maven
+# Extract it into a variable
+CLASSPATH=`cat classpath.maven`
+# Invoke the simulation directly
+echo "Invoking simulation via JVM"
+#/usr/lib/jvm/java-11-openjdk-amd64/bin/java --illegal-access=permit -Dfile.encoding=UTF-8 -classpath $2/target/classes/:$CLASSPATH $1 $3 1> logs/$1.out
+/usr/lib64/openjdk-11/bin/java --illegal-access=permit -Dfile.encoding=UTF-8 -classpath $2/target/classes/:$CLASSPATH $1 $3 1> logs/$1.out

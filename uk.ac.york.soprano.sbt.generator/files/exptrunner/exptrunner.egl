@@ -1,0 +1,52 @@
+package main;
+
+import org.eclipse.epsilon.eol.exceptions.models.EolModelLoadingException;
+import uk.ac.york.soprano.sbt.evolutionary.EvolutionaryExpt;
+
+public class ExptRunner_[%= campaign.name %] {
+	public static void main(String [] args) {
+
+		// TODO Parameters for NSGA-II should now be set in the DSL 
+				
+		[% if (campaign.approach.isTypeOf(NSGAEvolutionaryAlgorithm)) { %]
+		[% var nsgainfo = campaign.approach; %]
+		int maxIterations = [%= nsgainfo.iterations %];
+		int populationSize = [%= nsgainfo.populationSize %];
+		int offspringSize = [%= nsgainfo.populationSize %];
+		//ExperimentType etype = ExperimentType.FIXED_TIME_FUZZING;
+		// Sets the space model file and the campaign to run here 
+		
+		// Setting paths
+		// The paths are now supplied from the Wizard - nothing needs to be configured here!
+		// IProjectPath = [%= path %]
+
+		final String spaceModelFileName = "[%= testingModelPath %]";
+		final String CODE_GENERATION_DIRECTORY = "[%= codeGenerationDirectory %]";
+		final String orchestratorBasePath = "[%= orchestratorBasePath %]";
+		
+		String campaignToRun = "[%= campaign.name %]";
+			
+		[% if (campaign.activationGeneration.isTypeOf(ConditionBasedActivationGenerationMethod)) { %]
+		final boolean conditionBased = true;
+		final int conditionDepth = [%= campaign.activationGeneration.conditionDepth %];
+		[% } %]
+		
+		[% if (campaign.activationGeneration.isTypeOf(TimeBasedActivationGenerationMethod)) { %]
+		final boolean conditionBased = false;
+		final int conditionDepth = 0;
+		[% } %] 	 	
+				
+		final String grammarPath = "[%= codeGenerationDirectory %]/grammar/soprano-standardgrammar-[%= campaign.name %].bnf";
+		EvolutionaryExpt jmetalExpt;
+		try {
+			jmetalExpt = new EvolutionaryExpt(orchestratorBasePath, spaceModelFileName, campaignToRun, CODE_GENERATION_DIRECTORY, maxIterations, populationSize, offspringSize, conditionBased, conditionDepth, grammarPath);
+			jmetalExpt.runExperiment();
+		} catch (EolModelLoadingException e) {
+			e.printStackTrace();
+		} catch (PreInitFailed e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		[% } %]
+	}
+}

@@ -1,0 +1,84 @@
+package conditions.generated;
+
+import org.apache.flink.util.Collector;
+import uk.ac.york.soprano.sbt.architecture.data.EventMessage;
+
+[* Generates condition processing according to the condition processing state
+
+https://nightlies.apache.org/flink/flink-docs-master/docs/dev/datastream/fault-tolerance/queryable_state/
+*]
+
+public class [%= condition.name %] extends ConditionProcessing {
+
+    private static final long serialVersionUID = 1L;
+
+    // Change to ConditionMessage?
+    public void processElement(EventMessage msg, Context ctx, Collector<Boolean> out) throws Exception {
+        updateStateFrom(msg);
+        
+        [* Find every instance of "var" in the condition
+        Traverse the tree finding everything with "elt" equals var *]
+		
+        [% for (n in varNameValues) { %]
+        [* TODO: this assumes all types are double for now *]
+        double [%= n.value %] = (double)varState.get("[%= n.value %]");
+        [% } %]
+        
+        [* Traverse and expand all the elements according to their elt name *]
+        boolean res = [%= generateJavaCode() %];
+        out.collect(res);
+    }
+}
+
+[% 
+operation findEltsWithName(cond, targetname) {
+	var varElts = new List();
+	findEltsWithNameRec(varElts, node, targetname);
+	return varElts;
+}
+
+operation findEltsWithNameRec(ve, node, targetname) {
+	if (node.grammarElt.name == targetname) {
+		ve.add(e);	
+	}
+	
+	for (c in node.subNodes) {
+		findEltsWithNameRec(ve, node, targetname);
+	}
+}
+
+// Generates the code for the operations
+operation generateJavaCode(node) {
+	g = node.grammarElt;
+	if (g.name == "var") {
+		return g.value.value;
+	}
+	
+	if (g.name == "int") {
+		return g.value.value;
+	}
+	
+	if (g.name == "bincomp") {
+		gsub1 = node.subNodes.first();
+		gsub2 = node.subNodes.second();
+		gsub3 = node.subNodes.third();
+		return "(" + generateJavaCode(gsub1) + ")" + generateJavaCode(gsub2) + "(" + generateJavaCode(gsub3) + ")";
+	}
+	
+	if (g.name == "LESS_THAN") {
+		return "<";	
+	}
+	
+	if (g.name == "GREATER_THAN") {
+		return ">";
+	}
+	
+	if (g.name == "AND") {
+		return "&&";
+	}
+	
+	if (g.name == "OR") {
+		return "||";
+	}
+}
+%]

@@ -1,0 +1,60 @@
+@namespace(uri="http://ExSceMM", prefix="MRSPackage")
+
+package MRSPackage;
+
+class MRS {
+    val Topic[*] topics;
+	attr String launchFileLocation;
+	val Node[*] nodes;
+	val Simulator[1] simulator;
+	val Type[*] propertyType;
+}
+
+class Node {
+	attr String name;
+	ref Topic[*] subscriber;
+	ref Topic[*] publisher;
+	ref ComponentProperty[*] properties;
+}
+
+class Topic {
+	attr String name;
+	ref Type[1] type;
+}
+
+class Type {
+	attr String name;
+	attr ParsingMethod[1] parsingMethod;
+	val Parameter[*] parameters;
+	//ref Type[*] subTypes;
+}
+
+enum ParsingMethod {
+	JSON;
+	CSV;
+	CUSTOM;
+}
+
+class Parameter {
+	attr String name;
+	val Parameter[*] subparameters;
+	ref Type[1] type;
+}
+
+class ComponentProperty {
+	attr String name;
+	ref Type[1] type;
+}
+
+abstract class Simulator {
+}
+
+class ROSSimulator extends Simulator {
+	attr String hostname;
+	attr String port;
+}
+
+class MOOSSimulator extends Simulator {
+	attr String hostname;
+	attr String port;
+}

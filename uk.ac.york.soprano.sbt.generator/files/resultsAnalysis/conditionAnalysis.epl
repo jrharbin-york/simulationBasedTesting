@@ -1,0 +1,77 @@
+pre {
+	var targetName = "NONDOM-21_11_2022_02_23_41-final";
+	var matches = new List();
+}
+
+pattern ConditionVariableFind
+	condOps : FuzzingOperation from: getCondOpsFromCampaign(targetName),
+	suitableCondOps : FuzzingOperation from: condOps,
+	startCond : Condition from: suitableCondOps.activation.starting
+	
+	//guard: hasVariable(startCond, "distanceFromPerson")
+	guard: hasBinOp(startCond, BinaryLogicalOperation\#AND)
+	
+	,
+	endCond : Condition from: suitableCondOps.activation.starting {
+	
+	onmatch {	
+		suitableCondOps.containingTest.name.println();
+	}
+}
+
+operation getCondOpsFromCampaign(campaignName : String) : Sequence(FuzzingOperation) {
+	var chosenCampaign = CampaignResultSet.all.select(cr | cr.name == targetName).first();
+	var testsInCampaign = chosenCampaign.results;
+	var fuzzOps = new List();
+	for (t in testsInCampaign) {
+		for (o in t.operations) {
+			if (o.activation.instanceOf(ConditionBasedActivation)) {
+				fuzzOps.add(o);
+			}
+		}
+	}
+	fuzzOps.size().println("Fuzzing operations in front : " + targetName + " = ");
+	return fuzzOps;
+}
+
+operation eltContainsVar(ce : ConditionElement, varName : String) {
+	//
+
+	if (ce.instanceOf(CompositeCondition)) {
+		return eltContainsVar(ce.left, varName) or eltContainsVar(ce.right, varName);
+	} 
+	
+	if (ce.instanceOf(BasicCondition)) {
+		return exprMatches(ce.left, varName) or exprMatches(ce.right, varName);
+	}
+}
+
+operation eltHasBinOp(ce : ConditionElement, binop) {
+	if (ce.instanceOf(CompositeCondition)) {
+		return ce.binop.equals(binop);
+	} 
+	
+	if (ce.instanceOf(BasicCondition)) {
+		return false;
+	}
+}
+
+operation exprMatches(ce : ConditionExpr, varName : String) {
+	if (ce.instanceOf(ConditionVariable)) {
+		//return (ce.metric.name.equals(varName));
+		var varInCond = ce.metric.name;
+		return varName.isSubstringOf(varInCond);
+	}
+	
+	if (ce.instanceOf(ConditionInteger)) {
+		return false;
+	}
+}
+
+operation hasVariable(cond : Condition, varName : String) : Boolean {
+	return eltContainsVar(cond.c, varName);
+}
+
+operation hasBinOp(cond : Condition, binop) : Boolean {
+	return eltHasBinOp(cond.c, binop);
+}

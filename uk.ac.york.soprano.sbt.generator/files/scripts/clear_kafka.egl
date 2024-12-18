@@ -1,0 +1,7 @@
+#!/bin/sh
+
+cd ~/source/kafka_2.13-3.1.0/bin
+./kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic OUT &
+./kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic IN &
+# For distributed, the control and metric message topics no longer exist!
+echo "All cleared"

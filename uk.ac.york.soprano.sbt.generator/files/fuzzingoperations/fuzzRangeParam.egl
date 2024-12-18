@@ -1,0 +1,121 @@
+[% var commonTemplate : Template = TemplateFactory.load("fuzzingoperations/fuzzOpCommon.egl");
+
+var paramVariable = fuzzOp.variableToAffect;
+var componentName;
+// TODO: relative fuzzing not implemented yet - needs setRelative to be completed in ROS2ParameterSetter
+//var isFuzzingRelative = fuzzOp.isRelative;
+
+var extraImports = new List();
+extraImports.add("java.util.Properties");
+extraImports.add("uk.ac.york.soprano.sbt.architecture.simulator.DeferredAction");
+extraImports.add("uk.ac.york.soprano.sbt.architecture.simulator.IPropertySetter");
+extraImports.add("uk.ac.york.soprano.sbt.architecture.simulator.InvalidPropertyType");
+extraImports.add("uk.ac.york.soprano.sbt.architecture.simulator.RestoreFailed");
+extraImports.add("uk.ac.york.soprano.sbt.architecture.simulator.SimCore");
+
+
+if (paramVariable.isKindOf(ParameterVariable)) {
+	componentName = paramVariable.componentName;
+}
+
+commonTemplate.populate("fuzzOp", fuzzOp);
+commonTemplate.populate("classNameMiddle", "FlatMap");
+commonTemplate.populate("extraImports", extraImports);
+commonTemplate.populate("extraConstructorMethodCall", "setupParamProperties");
+commonTemplate.populate("useRandomSeed", true);
+%]
+
+[%= commonTemplate.process() %]
+
+	private String getParamOpUniqueID() {
+		// TODO: check this unique ID is OK 
+		String paramUniqueID = getUniqueID();
+		return paramUniqueID;
+	}
+
+	private void setupParamProperties() {
+		Properties paramProps = new Properties();
+		paramProps.setProperty("componentName", "[%= componentName %]");
+		paramProps.setProperty("paramName", "[%= paramVariable.name %]");
+		SimCore.getInstance().registerPropertySetter(getParamOpUniqueID(), paramProps);
+	}
+
+	@Override
+	public void processElement1(EventMessage value, Context ctx, Collector<EventMessage> out) throws Exception {
+		[% for (aParameter in fuzzOp.valueSet) { %]
+		if (isReadyNow()) {
+			String uniqueID = getParamOpUniqueID();
+			if (!SimCore.getInstance().hasDeferredAction(uniqueID)) {
+					IPropertySetter ps = SimCore.getInstance().getPropertySetter(uniqueID);
+			
+					double newValue = new [%= genDoubleRange(aParameter) %].generateInRange(rng);
+					// TODO: relative fuzzing not implemented yet - needs setRelative to be completed in ROS2ParameterSetter
+					[%
+					var isFuzzingRelative = false; 
+					if (isFuzzingRelative) { %]
+					Double origVal = Double.parseDouble((String)value.getValue());
+					Double fuzzedVal = origVal + newValue;
+					valueOut.setValue(fuzzedVal.toString());
+					[% } else { %]
+					Double fuzzedVal = newValue;
+					[% } %]
+					double time = SimCore.getInstance().getTime();
+				
+					// The set/restore actions cannot be run from within a Flink process function... they
+					// have to be stored to be run later by the SimCore
+					DeferredAction da = (() -> {
+					System.out.println("PARAM: Running parameter backup current/set action for " + this.toString());
+					try { ps.set(fuzzedVal);
+					System.out.println("PARAM: Set parameter is done...");
+					} 
+					catch (InvalidPropertyType e) {
+						e.printStackTrace();
+					}
+					});
+				// TODO: need unique ID
+				SimCore.getInstance().addDeferredAction("DA-START", da);
+			}
+		}
+		
+		if (!isReadyNow()) {
+			IPropertySetter ps = SimCore.getInstance().getPropertySetter(getParamOpUniqueID());
+			if (ps.isSet() && !ps.isRestored()) {
+				// The set/restore actions cannot be run from within a Flink process function... they
+				// have to be stored to be run later by the SimCore
+				DeferredAction da = (() -> {
+					System.out.println("PARAM: Running parameter restore action for " + this.toString());
+					try { 
+						ps.restoreOriginalValue();
+					System.out.println("done...");
+					} 
+					catch (RestoreFailed e) {
+						e.printStackTrace();
+					}
+					});
+				// TODO: need unique ID
+				SimCore.getInstance().addDeferredAction("DA-END", da);
+			}
+		}
+		
+		out.collect(value);
+		[% } %]
+	}	
+}
+
+[%
+// TODO: shared with fuzzRange.egl - factor out into common EGL file
+// Generate the double range object according to the parameter method choice 
+operation genDoubleRange(aParameter) {
+	if (aParameter.randChoice == RandomValueFromSetChoice#RANDOM_FROM_SEED) {
+		return "DoubleRange(" + aParameter.lowerBound + "," + aParameter.upperBound + ")";
+	}
+	
+	if (aParameter.randChoice == RandomValueFromSetChoice#ALWAYS_LOW) {
+		return "DoubleRange(" + aParameter.lowerBound + "," + aParameter.lowerBound + ")";
+	}
+	
+	if (aParameter.randChoice == RandomValueFromSetChoice#ALWAYS_HIGH) {
+		return "DoubleRange(" + aParameter.upperBound + "," + aParameter.upperBound + ")";
+	}
+}
+%]

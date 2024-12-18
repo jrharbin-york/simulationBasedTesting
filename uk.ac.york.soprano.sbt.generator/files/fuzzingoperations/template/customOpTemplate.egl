@@ -1,0 +1,28 @@
+package fuzzingoperations.template;
+
+import java.util.Map;
+
+import java.io.Serializable;
+
+import org.apache.flink.streaming.api.functions.co.CoProcessFunction.Context;
+import org.apache.flink.util.Collector;
+
+import uk.ac.york.soprano.sbt.architecture.data.EventMessage;
+import uk.ac.york.soprano.sbt.architecture.fuzzingoperations.CustomFuzzingOperation;
+
+public class [%= fuzzOp.name %] implements CustomFuzzingOperation, Serializable {
+
+	private static final long serialVersionUID = 1L;
+		
+	public [%= fuzzOp.name %]() {
+	
+	}
+	
+	public void customProcess(Map<String, Object> params, EventMessage value, Context ctx, Collector<EventMessage> out) {
+		// CUSTOM PROCESSING CODE HERE
+	}
+	
+	public void customPreprocessing(Map<String, Object> params) {
+		// CUSTOM PRE-PROCESSING CODE HERE
+	}
+}
