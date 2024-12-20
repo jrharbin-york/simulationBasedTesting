@@ -18,7 +18,7 @@ The integrated methodology:
 
 The testing architecture:
 
-![Testing architecture](./documentation/readme-images/sbt-overall-structure-with-connections.png)
+![Testing architecture](./documentation/readme-images/sbt-overall-architecture-with-connections.png)
 
 # Documentation
 
