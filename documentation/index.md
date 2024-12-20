@@ -8,7 +8,7 @@ Installation instructions for the Experiment Manager (as a Docker container)
 
 ### Worker Installation Instructions
 
-[Worker Daemon Setup Instructions](./worker-daemon-setup.md)
+[Worker Node Setup Instructions](./worker-setup.md)
 
 ## Installation Instructions for Windows
 
