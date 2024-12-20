@@ -14,11 +14,11 @@ Further background information is available in the SESAME project deliverables:
 
 The integrated methodology:
 
-![Integrated methodology figure](./documentation/readme-images/overall-alg-structure.png?)
+![Integrated methodology figure](./documentation/readme-images/methodology-soprano.png?)
 
 The testing architecture:
 
-![Testing architecture](./documentation/readme-images/methodology-simtesting.png)
+![Testing architecture](./documentation/readme-images/sbt-overall-structure-with-connections.png)
 
 # Documentation
 
