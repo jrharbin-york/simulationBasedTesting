@@ -290,7 +290,7 @@ public class [%= testNameString %]_TestRunner {
 				// This will process by default all the static variables as
 				// well, users can include them or not by setting includeInTiming
 			%]
-				[%= produceTimeString(fuzzOp) %]
+				[%= produceTimeString(fuzzOp, test, mrs) %]
 			[% } %]
 		[% } %]
 		
@@ -481,12 +481,20 @@ operation produceFOGenerationSignature(fuzzOp) {
 	return generateFO;
 }
 
-operation produceTimeString(fuzzOp) {
+operation produceTimeString(fuzzOp, test, mrs) {
 	var aaList = fuzzOp.activation;
 	var str="";
 	for (aa in aaList) {
 		if (aa.isKindOf(FixedTimeActivation)) {
 			str = "fuzzOpTimes.add(Double.valueOf(" + (aa.endTime - aa.startTime) + "));\n";
+		}
+		
+		if (aa.isKindOf(ConstantActivation)) {
+		    var simEnd = test.parentCampaign.endTrigger.timeLimitSeconds;
+			// Use the end minus start to make it clearer in the generated code that
+			var simStart = mrs.startupZeroTime;
+			// this came from a constant activation
+			str = "fuzzOpTimes.add(Double.valueOf(" + simEnd + " - " + simStart + "));\n";
 		}
 	}
 	return str;

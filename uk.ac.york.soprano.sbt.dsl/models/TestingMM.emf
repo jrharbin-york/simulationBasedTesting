@@ -421,6 +421,7 @@ package StandardGrammar {
 package MRSPackage {
 	class MRS {
 		val GenericVariable[*] variables;
+		attr int startupZeroTime = 0;
 		attr int launchDelaySeconds = 40;
 		// TODO: this should be replaced with a reference to the started containers
 		attr String launchFileLocation;
