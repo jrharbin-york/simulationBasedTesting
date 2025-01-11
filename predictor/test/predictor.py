@@ -11,12 +11,15 @@ from sktime.classification.ensemble import ComposableTimeSeriesForestClassifier
 from sktime.transformations.panel.compose import ColumnConcatenator
 
 from sktime.performance_metrics.forecasting import MeanAbsoluteError
+from sktime.performance_metrics.forecasting import MeanSquaredError
 from sktime.performance_metrics.forecasting import median_absolute_percentage_error
 
 from matplotlib import pyplot as plt
 from sktime.utils.plotting import plot_series
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
+
+from timeit import default_timer as timer
 
 from sklearn.linear_model import RidgeClassifierCV, RidgeCV, SGDClassifier, SGDRegressor
 from sklearn.ensemble import RandomForestClassifier
@@ -108,6 +111,10 @@ def hivecote2():
     hive_cote = HIVECOTEV2()
     return hive_cote
 
+def rocket():
+    rocket_pipeline = make_pipeline(RandomIntervalFeatureExtractor(), StandardScaler(with_mean=False), RidgeCV(alphas=(0.1, 1.0, 50.0))) 
+    return rocket_pipeline
+
 def plot_regression(predicted_vs_actual, filename="regression.pdf"):
     plt.plot(predicted_vs_actual["predicted_val"], predicted_vs_actual["actual_val"],'x')
     plt.axline((1,1),(2,2), marker="None", linestyle="dotted", color="Black")
@@ -148,12 +155,13 @@ def test_regression(id_code, fig_filename_func, pd_res, base_dir_full, n_estimat
         pipeline, r2_score, predicted_vs_actual = run_regression_or_classifier(True, create_tsf_regression, "TSF", params)
         time_end = timer()
         time_diff = time_end - time_start
-        
-        mape = median_absolute_percentage_error(predicted_vs_actual["predicted_val"], predicted_vs_actual["actual_val"])
-        
-        log.debug("MAPE = %f", mape)
-        # Also mse, RMSE
-        results_this_test = {"id":id_code, "k_split":i, "n_estimators":n_estimators, "mape":mape, "r2_score":r2_score, "filename_graph":fig_filename, "time_diff":time_diff }
+
+        mse_c = MeanSquaredError()
+        rmse_c = MeanSquaredError(square_root=True)
+
+        mse = mse_c(predicted_vs_actual["predicted_val"], predicted_vs_actual["actual_val"])
+        rmse = rmse_c(predicted_vs_actual["predicted_val"], predicted_vs_actual["actual_val"])
+        results_this_test = {"id":id_code, "k_split":i, "n_estimators":n_estimators, "r2_score":r2_score, "filename_graph":fig_filename, "time_diff":time_diff, "mse":mse, "rmse":rmse }
         pd_res.loc[len(pd_res)] = results_this_test
         # change filename
         log.debug("Plotting to %s", fig_filename)
@@ -181,14 +189,14 @@ def test_classification(pd_res, base_dir_full):
     log.info("Plot done")
    
 
-def main():
-    stats_results = pd.DataFrame(columns=["id", "n_estimators", "k_split", "r2_score", "mape", "filename_graph", "time_diff"])
-    results_file = "regression-res.csv"
+def run_test(alg_name, alg_func, alg_params):
+    stats_results = pd.DataFrame(columns=["id", "n_estimators", "k_split", "r2_score", "mse", "rmse", "filename_graph", "time_diff"])
+    results_file = "regression-" + alg_name + "res.csv"
     # ID, mape, r2
 
     id_num = 0
-    for n_estimators in [5,10,50]:
-        fig_filename_func = lambda id_num, k_split: "regression-ID" + str(id_num) + "k_split" + str(k_split)  +".png"
+    for n_estimators in alg_params:
+        fig_filename_func = lambda id_num, k_split: "regression-" + alg_name + "-ID" + str(id_num) + "k_split" + str(k_split)  +".png"
         id_num+=1
         id_code = "ID" + str(id_num)
         data_dir_base = "/home/jharbin/academic/soprano/predictor/test-data/temp-data-variable-multimodels"
@@ -196,4 +204,8 @@ def main():
     print(tabulate(stats_results, headers="keys"))
     stats_results.to_csv(results_file, sep=",")  
 
-main()
+run_test("TSF", lambda n_estimators: create_tsf_regression(n_estimators), [5,10,20])
+run_test("Rocket", lambda n_estimators: create_tsf_regression(n_estimators), [1])
+
+
+
