@@ -39,6 +39,8 @@ from tabulate import tabulate
 
 log = structlog.get_logger()
 
+k_fold_shuffle = True
+
 def load_individual_instance(filename, needed_columns):
     df = pd.read_csv(filename)
     for col in needed_columns:
@@ -107,12 +109,12 @@ def create_tsf_regression(n_estimators=200):
     tsfr = combiner * TimeSeriesForestRegressor(n_estimators=n_estimators, n_jobs=-1)
     return tsfr
 
-def hivecote2():
+def create_hivecote2():
     hive_cote = HIVECOTEV2()
     return hive_cote
 
-def rocket():
-    rocket_pipeline = make_pipeline(RandomIntervalFeatureExtractor(), StandardScaler(with_mean=False), RidgeCV(alphas=(0.1, 1.0, 50.0))) 
+def create_rocket(num_kernels):
+    rocket_pipeline = make_pipeline(Rocket(num_kernels=num_kernels, n_jobs=-1), StandardScaler(with_mean=False), RidgeCV(alphas=(0.1, 1.0, 50.0))) 
     return rocket_pipeline
 
 def plot_regression(predicted_vs_actual, filename="regression.pdf"):
@@ -130,7 +132,7 @@ def read_data(results_directory, mfile):
     metrics = pd.read_csv(mfile)
     return data_files, metrics
 
-def test_regression(id_code, fig_filename_func, pd_res, base_dir_full, n_estimators, k=5):
+def test_regression(id_code, alg_func, fig_filename_func, pd_res, base_dir_full, n_estimators, k=5):
 
     params = {}
     params["base_dir"] = base_dir_full
@@ -138,10 +140,11 @@ def test_regression(id_code, fig_filename_func, pd_res, base_dir_full, n_estimat
     params["needed_columns"] = ['distortVelocity_variable', "reverseVehicle_variable"]
     mfile = base_dir_full + "/metrics.csv"
     data_files, metrics = read_data(base_dir_full, mfile)
-    create_tsf_func = lambda n_estimators: create_tsf_regression(n_estimators)
+
+    alg_func_delayed = lambda: alg_func(n_estimators)
  
     k=5
-    kf = KFold(n_splits=k)
+    kf = KFold(n_splits=k, shuffle=k_fold_shuffle)
     for i, (train_index, test_index) in enumerate(kf.split(data_files)):
         # Split the data for k_fold validation
         params["data_files_train"] = [data_files[i] for i in train_index]
@@ -152,7 +155,7 @@ def test_regression(id_code, fig_filename_func, pd_res, base_dir_full, n_estimat
         fig_filename = fig_filename_func(id_code, i)
 
         time_start = timer()
-        pipeline, r2_score, predicted_vs_actual = run_regression_or_classifier(True, create_tsf_regression, "TSF", params)
+        pipeline, r2_score, predicted_vs_actual = run_regression_or_classifier(True, alg_func_delayed, "TSF", params)
         time_end = timer()
         time_diff = time_end - time_start
 
@@ -191,7 +194,7 @@ def test_classification(pd_res, base_dir_full):
 
 def run_test(alg_name, alg_func, alg_params):
     stats_results = pd.DataFrame(columns=["id", "n_estimators", "k_split", "r2_score", "mse", "rmse", "filename_graph", "time_diff"])
-    results_file = "regression-" + alg_name + "res.csv"
+    results_file = "regression-" + alg_name + "-res.csv"
     # ID, mape, r2
 
     id_num = 0
@@ -200,12 +203,10 @@ def run_test(alg_name, alg_func, alg_params):
         id_num+=1
         id_code = "ID" + str(id_num)
         data_dir_base = "/home/jharbin/academic/soprano/predictor/test-data/temp-data-variable-multimodels"
-        stats_results = test_regression(id_code, fig_filename_func, stats_results, data_dir_base, n_estimators=n_estimators)
+        stats_results = test_regression(id_code, alg_func, fig_filename_func, stats_results, data_dir_base, n_estimators=n_estimators)
     print(tabulate(stats_results, headers="keys"))
     stats_results.to_csv(results_file, sep=",")  
 
-run_test("TSF", lambda n_estimators: create_tsf_regression(n_estimators), [5,10,20])
-run_test("Rocket", lambda n_estimators: create_tsf_regression(n_estimators), [1])
-
-
-
+run_test("TSF", lambda n_estimators: create_tsf_regression(n_estimators), [5,20,50,100,200])
+run_test("Rocket", lambda n_kernels: create_rocket(n_kernels), [10000])
+run_test("HIVECOTE", lambda n_kernels: create_hivecote2(), [10000])
