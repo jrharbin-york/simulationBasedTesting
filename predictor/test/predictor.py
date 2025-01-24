@@ -29,6 +29,14 @@ from sklearn.svm import LinearSVC, LinearSVR
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
 
+import tsfresh
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
+from sktime.transformations.panel.tsfresh import TSFreshFeatureExtractor
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import AdaBoostRegressor
+
 import datetime as dt
 import numpy as np
 import glob
@@ -111,6 +119,25 @@ def create_tsf_regression(n_estimators=200):
     tsfr = combiner * TimeSeriesForestRegressor(n_estimators=n_estimators, n_jobs=-1)
     return tsfr
 
+def create_tsfresh_windowed_regression(n_estimators, windowsize):
+    feature_name = "jrh_windowed_features_calculation_fixedsize"
+    # TODO: try other features as well?
+    settings = {}
+    log.debug("create windowsize=" + str(windowsize))
+    settings[feature_name] = {"windowsize" : windowsize}
+    col_names = ['distortVelocity_variable', "reverseVehicle_variable"]
+    features_selected = list(map(lambda col_name: col_name + "__" + feature_name + "__windowsize_" + str(windowsize), col_names))
+#   features_selected = list(map(lambda col_name: col_name + "__" + feature_name, col_names))
+
+    for fn in features_selected:
+        settings[fn] = {"windowsize" : windowsize}
+    
+    print("features_selected = " + str(features_selected))
+    t_features = TSFreshFeatureExtractor(default_fc_parameters=settings, kind_to_fc_parameters=features_selected, show_warnings=False)
+    gregressor = GradientBoostingRegressor(n_estimators=n_estimators)
+    pipeline = make_pipeline(t_features, StandardScaler(with_mean=False), gregressor)
+    return pipeline
+
 def create_hivecote2():
     hive_cote = HIVECOTEV2()
     return hive_cote
@@ -134,8 +161,7 @@ def read_data(results_directory, mfile):
     metrics = pd.read_csv(mfile)
     return data_files, metrics
 
-def test_regression(id_code, alg_func, fig_filename_func, pd_res, base_dir_full, summary_res, alg_param, k=5):
-
+def test_regression(id_code, alg_func, fig_filename_func, pd_res, base_dir_full, summary_res, alg_param1, alg_param2, k=5):
     params = {}
     params["base_dir"] = base_dir_full
     params["target_metric_name"] = "distanceToPoint3D"
@@ -143,7 +169,7 @@ def test_regression(id_code, alg_func, fig_filename_func, pd_res, base_dir_full,
     mfile = base_dir_full + "/metrics.csv"
     data_files, metrics = read_data(base_dir_full, mfile)
 
-    alg_func_delayed = lambda: alg_func(alg_param)
+    alg_func_delayed = lambda: alg_func(alg_param1, alg_param2)
  
     k=5
     kf = KFold(n_splits=k, shuffle=k_fold_shuffle)
@@ -187,7 +213,7 @@ def test_regression(id_code, alg_func, fig_filename_func, pd_res, base_dir_full,
         mse_all_splits = np.append(mse_all_splits, mse)
         rmse_all_splits = np.append(rmse_all_splits, rmse)
          
-        results_this_test = {"id":id_code, "k_split":i, "n_estimators":alg_param, "r2_score":r2_score_from_reg, "filename_graph":fig_filename, "time_diff":time_diff, "mse":mse, "rmse":rmse }
+        results_this_test = {"id":id_code, "k_split":i, "param1":alg_param1, "param2":alg_param2, "r2_score":r2_score_from_reg, "filename_graph":fig_filename, "time_diff":time_diff, "mse":mse, "rmse":rmse }
         pd_res.loc[len(pd_res)] = results_this_test
         # change filename
         log.debug("Plotting to %s", fig_filename)
@@ -201,7 +227,7 @@ def test_regression(id_code, alg_func, fig_filename_func, pd_res, base_dir_full,
     stddev_mse = np.std(mse_all_splits)
     stddev_rmse = np.std(rmse_all_splits)
 
-    summary_this_test = {"n_estimators":alg_param, "r2_score_mean":mean_r2, "mse_mean":mean_mse, "rmse_mean":mean_rmse, "r2_score_stddev":stddev_r2, "mse_score_stddev":stddev_mse, "rmse_score_stddev":stddev_rmse}
+    summary_this_test = {"param1":alg_param1, "param2":alg_param2, "r2_score_mean":mean_r2, "mse_mean":mean_mse, "rmse_mean":mean_rmse, "r2_score_stddev":stddev_r2, "mse_score_stddev":stddev_mse, "rmse_score_stddev":stddev_rmse}
     summary_res.loc[len(summary_res)] = summary_this_test
 
     log.info("Mean r2 all splits = %f, stddev r2 all splits = %f", mean_r2, stddev_r2)
@@ -227,21 +253,21 @@ def test_classification(pd_res, base_dir_full):
     plot_regression(predicted_vs_actual, "fixedfuzzing_multimodels_twooperations_turtlebot.pdf")
     log.info("Plot done")
    
-def run_test(alg_name, alg_func, alg_params):
-    regression_results = pd.DataFrame(columns=["id", "n_estimators", "k_split", "r2_score", "mse", "rmse", "filename_graph", "time_diff"])
-    stats_results = pd.DataFrame(columns=["n_estimators", "r2_score_mean", "mse_mean", "rmse_mean", "r2_score_stddev", "mse_score_stddev", "rmse_score_stddev"])
+def run_test(alg_name, alg_func, alg_params1, alg_params2):
+    regression_results = pd.DataFrame(columns=["id", "param1", "param2", "k_split", "r2_score", "mse", "rmse", "filename_graph", "time_diff"])
+    stats_results = pd.DataFrame(columns=["param1", "param2", "r2_score_mean", "mse_mean", "rmse_mean", "r2_score_stddev", "mse_score_stddev", "rmse_score_stddev"])
     results_file = "regression-" + alg_name + "-res.csv"
     summary_file = "regression-" + alg_name + "-summary-stats.csv"
     # ID, mape, r2
 
     id_num = 0
-    for n_estimators in alg_params:
-        fig_filename_func = lambda id_num, k_split: "regression-" + alg_name + "-ID" + str(id_num) + "k_split" + str(k_split)  +".png"
-        id_num+=1
-        id_code = "ID" + str(id_num)
-        data_dir_base = "/home/jharbin/academic/soprano/predictor/test-data/temp-data-variable-multimodels"
-        regression_results, stats_results = test_regression(id_code, alg_func, fig_filename_func, regression_results, data_dir_base, stats_results, alg_param=n_estimators)
-
+    for param1 in alg_params1:
+        for param2 in alg_params2:
+            fig_filename_func = lambda id_num, k_split: "regression-" + alg_name + "-ID" + str(id_num) + "k_split" + str(k_split)  +".png"
+            id_num+=1
+            id_code = "ID" + str(id_num)
+            data_dir_base = "/home/jharbin/academic/soprano/predictor/test-data/temp-data-variable-multimodels"
+            regression_results, stats_results = test_regression(id_code, alg_func, fig_filename_func, regression_results, data_dir_base, stats_results, alg_param1=param1, alg_param2=param2)
         
     print(tabulate(stats_results, headers="keys"))
     regression_results.to_csv(results_file, sep=",")
@@ -249,7 +275,13 @@ def run_test(alg_name, alg_func, alg_params):
     print(tabulate(regression_results, headers="keys"))
     stats_results.to_csv(summary_file, sep=",")
           
+#run_test("TSF", lambda n_estimators: create_tsf_regression(n_estimators), [5,20,50,100,200])
+#First alg is the n_estimators
+#Second alg is the window length
 
-run_test("TSF", lambda n_estimators: create_tsf_regression(n_estimators), [5,20,50,100,200])
-#run_test("Rocket", lambda n_kernels: create_rocket(n_kernels), [10000])
+n_estimator_choices = [5,20,50,100,200,300]
+window_size_choices_secs = [0.5,1,2,5,10]
+
+run_test("Windowed", lambda n_estimators, window_size_choice: create_tsfresh_windowed_regression(n_estimators, window_size_choice), alg_params1=n_estimator_choices, alg_params2=window_size_choices_secs)
 #run_test("HIVECOTE", lambda n_kernels: create_hivecote2(), [10000])
+#run_test("Rocket", lambda n_kernels: create_rocket(n_kernels), [10000])
