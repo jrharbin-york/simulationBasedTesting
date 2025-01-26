@@ -5,11 +5,11 @@ import org.apache.flink.util.Collector;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import uk.ac.york.sesame.testing.architecture.data.EventMessage;
-import uk.ac.york.sesame.testing.architecture.data.Point;
-import uk.ac.york.sesame.testing.architecture.metrics.Metric;
+import uk.ac.york.soprano.sbt.architecture.data.EventMessage;
+import uk.ac.york.soprano.sbt.architecture.data.Point;
+import uk.ac.york.soprano.sbt.architecture.metrics.Metric;
 
-import uk.ac.york.sesame.testing.architecture.utilities.ParsingUtils;
+import uk.ac.york.soprano.sbt.architecture.utilities.ParsingUtils;
 
 public class distanceToPoint3DMetric extends Metric {
 

@@ -53,6 +53,14 @@ public class LocalExecutionStrategyImpl extends ExecutionStrategyImpl implements
 	protected LocalExecutionStrategyImpl() {
 		super();
 	}
+	
+    /**
+    @generated NOT
+    */
+    @Override
+    public boolean isDistributed() {
+            return false;
+    }
 
 	/**
 	 * <!-- begin-user-doc -->

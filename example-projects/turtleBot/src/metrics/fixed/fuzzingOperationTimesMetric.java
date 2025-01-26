@@ -7,10 +7,10 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.CoProcessFunction;
 import org.apache.flink.util.Collector;
 
-import uk.ac.york.sesame.testing.architecture.data.ControlMessage;
-import uk.ac.york.sesame.testing.architecture.data.EventMessage;
-import uk.ac.york.sesame.testing.architecture.metrics.Metric;
-import uk.ac.york.sesame.testing.architecture.simulator.SimCore;
+import uk.ac.york.soprano.sbt.architecture.data.ControlMessage;
+import uk.ac.york.soprano.sbt.architecture.data.EventMessage;
+import uk.ac.york.soprano.sbt.architecture.metrics.Metric;
+import uk.ac.york.soprano.sbt.architecture.simulator.SimCore;
 
 public class fuzzingOperationTimesMetric extends Metric {
 

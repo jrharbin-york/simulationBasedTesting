@@ -119,6 +119,14 @@ public class DistributedExecutionStrategyImpl extends ExecutionStrategyImpl impl
 	protected DistributedExecutionStrategyImpl() {
 		super();
 	}
+	
+    /**
+    @generated NOT
+    */
+    @Override
+    public boolean isDistributed() {
+            return true;
+    }
 
 	/**
 	 * <!-- begin-user-doc -->
