@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build -t simtesting:latest .
+docker build -t simtesting-humble:latest .
