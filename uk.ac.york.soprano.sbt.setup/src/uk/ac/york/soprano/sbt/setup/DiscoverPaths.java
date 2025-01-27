@@ -9,7 +9,7 @@ import java.util.Properties;
 
 public class DiscoverPaths {
 	private static boolean isRepoBase(File dir) {
-		boolean check = new File(dir, "uk.ac.york.sesame.testing.generator").exists();
+		boolean check = new File(dir, "uk.ac.york.soprano.sbt.generator").exists();
 		return check;
 	}
 
@@ -34,11 +34,11 @@ public class DiscoverPaths {
 	}
 
 	public static File findGeneratorProject(File repoBaseDir) {
-		return new File(repoBaseDir, "uk.ac.york.sesame.testing.generator");
+		return new File(repoBaseDir, "uk.ac.york.soprano.sbt.generator");
 	}
 
 	public static File getModelDirectory(File repoBaseDir) {
-		return new File(repoBaseDir, "/uk.ac.york.sesame.testing.dsl/models/");
+		return new File(repoBaseDir, "/uk.ac.york.soprano.sbt.dsl/models/");
 	}
 
 	public static String getModelDirectoryAsString() throws ErrorGettingPath {
@@ -68,9 +68,9 @@ public class DiscoverPaths {
 			File repoBaseDir = repoBaseDir_o.get();
 			String homeDir_s = System.getProperty("user.home");
 			File homeDir = new File(homeDir_s); 
-			File metamodelDir = new File(repoBaseDir, "/uk.ac.york.sesame.testing.dsl/models/");
+			File metamodelDir = new File(repoBaseDir, "/uk.ac.york.soprano.sbt.dsl/models/");
 			File metamodelFile = new File(metamodelDir, "TestingMM.ecore");
-			File autoRunnerScripts = new File(repoBaseDir, "/uk.ac.york.sesame.testing.evolutionary/scripts/");
+			File autoRunnerScripts = new File(repoBaseDir, "/uk.ac.york.soprano.sbt.evolutionary/scripts/");
 			File codeGenSharedDir = new File(homeDir, "/shared-code/"); 
 						
 			File genProjectDir = findGeneratorProject(repoBaseDir);
