@@ -21,7 +21,7 @@ public class EvolutionaryRunnerTurtlebot_testCampaign1 {
 		// PATHS HERE
 		final String spaceModelFileName = "/home/simtesting/workspace/turtleBot/models/turtleMRS.model";
 		final String CODE_GENERATION_DIRECTORY = "/home/simtesting/workspace/turtleBot";
-		final String orchestratorBasePath = "/home/simtesting/simtesting/simulationBasedTesting/uk.ac.york.sesame.testing.generator/";
+		final String orchestratorBasePath = "/home/simtesting/simtesting/simulationBasedTesting/uk.ac.york.soprano.sbt.generator/";
 		String grammarPath = "/home/simtesting/workspace/turtleBot/grammar/turtlesim-grammar.bnf";
 		
 		String campaignToRun = "testCampaign1";
